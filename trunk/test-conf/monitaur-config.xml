@@ -1,0 +1,35 @@
+<?xml version='1.0'?>
+<monitaur>
+    <jmx pollIntervalMillis="5000">
+        <guage logicalName="HeapMemoryUsage">
+            <guageMinimumValueCollector>
+                <constantValueCollector value="0"/>
+            </guageMinimumValueCollector>
+            <guageCurrentValueCollector>
+                <jmxAttributeCollector objectName="Memory" attributeName="^HeapMemoryUsage" compositeKey="used"/>
+            </guageCurrentValueCollector>
+            <guageMaximumValueCollector>
+                <jmxAttributeCollector objectName="Memory" attributeName="^HeapMemoryUsage" compositeKey="max"/>
+            </guageMaximumValueCollector>
+        </guage>
+        <guage logicalName="ApplicationRingBuffer">
+            <guageMinimumValueCollector>
+                <constantValueCollector value="0"/>
+            </guageMinimumValueCollector>
+            <guageCurrentValueCollector>
+                <calculatingNumberJmxCollector operator="SUBTRACT">
+                    <operandOne>
+                        <constantValueCollector value="1024"/>
+                    </operandOne>
+                    <operandTwo>
+                        <jmxAttributeCollector objectName="Main,type=EventProcessing" attributeName="^RemainingCapacity"/>
+                    </operandTwo>
+                </calculatingNumberJmxCollector>
+            </guageCurrentValueCollector>
+            <guageMaximumValueCollector>
+                <constantValueCollector value="1024"/>
+            </guageMaximumValueCollector>
+        </guage>
+        <jmxAttributeCollector logicalName="LoadAverage" objectName="OperatingSystem" attributeName="^SystemLoadAverage"/>
+    </jmx>
+</monitaur>
