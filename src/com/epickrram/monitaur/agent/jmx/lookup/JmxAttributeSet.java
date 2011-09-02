@@ -35,7 +35,7 @@ public final class JmxAttributeSet
                     {
                         if(searchTerm.matches(objectName, attribute))
                         {
-                            monitoredAttributes.add(new AttributePath(objectName, attribute.getName()));
+                            monitoredAttributes.add(new AttributePath(objectName, attribute));
                         }
                     }
                 }

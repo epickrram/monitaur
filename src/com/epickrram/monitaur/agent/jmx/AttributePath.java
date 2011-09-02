@@ -1,16 +1,17 @@
 package com.epickrram.monitaur.agent.jmx;
 
+import javax.management.MBeanAttributeInfo;
 import javax.management.ObjectName;
 
 public final class AttributePath
 {
     private final ObjectName objectName;
-    private final String attributeName;
+    private final MBeanAttributeInfo attributeInfo;
 
-    public AttributePath(final ObjectName objectName, final String attributeName)
+    public AttributePath(final ObjectName objectName, final MBeanAttributeInfo attributeInfo)
     {
         this.objectName = objectName;
-        this.attributeName = attributeName;
+        this.attributeInfo = attributeInfo;
     }
 
     public ObjectName getObjectName()
@@ -18,16 +19,16 @@ public final class AttributePath
         return objectName;
     }
 
-    public String getAttributeName()
+    public MBeanAttributeInfo getAttributeInfo()
     {
-        return attributeName;
+        return attributeInfo;
     }
 
     @Override
     public String toString()
     {
         return "AttributePath{" +
-                "attributeName='" + attributeName + '\'' +
+                "attributeInfo='" + attributeInfo + '\'' +
                 ", objectName=" + objectName +
                 '}';
     }

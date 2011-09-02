@@ -1,8 +1,8 @@
 package com.epickrram.monitaur.agent;
 
-import com.epickrram.monitaur.agent.domain.GuageData;
-import com.epickrram.monitaur.agent.domain.MonitorData;
-import com.epickrram.monitaur.agent.domain.MonitorType;
+import com.epickrram.monitaur.common.domain.GaugeData;
+import com.epickrram.monitaur.common.domain.MonitorData;
+import com.epickrram.monitaur.common.domain.MonitorType;
 
 import java.awt.Canvas;
 import java.awt.Color;
@@ -54,10 +54,10 @@ public final class UiPublisher extends Canvas implements Publisher
         final int barWidth = size.width - 20;
         for (final MonitorData monitorData : dataByLogicalNameMap.values())
         {
-            if(monitorData.getMonitorType() == MonitorType.GUAGE)
+            if(monitorData.getMonitorType() == MonitorType.GAUGE)
             {
-                final GuageData guageData = (GuageData) monitorData.getDatum();
-                drawGraphAt(xoffset, yoffset, barWidth, 10, guageData.getPercentage(), guageData.getCurrentValue(), guageData.getMaximum(), monitorData.getLogicalName());
+                final GaugeData gaugeData = (GaugeData) monitorData.getDatum();
+                drawGraphAt(xoffset, yoffset, barWidth, 10, gaugeData.getPercentage(), gaugeData.getCurrentValue(), gaugeData.getMaximum(), monitorData.getLogicalName());
                 yoffset += 44;
             }
         }

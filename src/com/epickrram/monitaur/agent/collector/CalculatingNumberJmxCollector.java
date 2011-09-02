@@ -1,7 +1,7 @@
 package com.epickrram.monitaur.agent.collector;
 
 
-import com.epickrram.monitaur.agent.domain.MonitorType;
+import com.epickrram.monitaur.common.domain.MonitorType;
 
 import javax.management.MBeanServerConnection;
 
@@ -18,10 +18,16 @@ public final class CalculatingNumberJmxCollector extends AbstractJmxCollector im
                                          final JmxCollector operandOne, final JmxCollector operandTwo,
                                          final Operator operator)
     {
-        super(logicalName, MonitorType.SCALAR);
+        super(logicalName, MonitorType.SCALAR, operandOne.getType());
         this.operandOne = operandOne;
         this.operandTwo = operandTwo;
         this.operator = operator;
+        validate();
+    }
+
+    private void validate()
+    {
+        // TODO check that operands are compatible
     }
 
     @Override

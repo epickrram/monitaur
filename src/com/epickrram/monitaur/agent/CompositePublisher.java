@@ -1,6 +1,6 @@
 package com.epickrram.monitaur.agent;
 
-import com.epickrram.monitaur.agent.domain.MonitorData;
+import com.epickrram.monitaur.common.domain.MonitorData;
 
 public final class CompositePublisher implements Publisher
 {

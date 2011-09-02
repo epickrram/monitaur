@@ -1,6 +1,6 @@
 package com.epickrram.monitaur.agent.collector;
 
-import com.epickrram.monitaur.agent.domain.MonitorType;
+import com.epickrram.monitaur.common.domain.MonitorType;
 
 public interface Collector<ProviderType>
 {

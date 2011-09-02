@@ -1,0 +1,1 @@
+- JMX Monitor Agent should periodically poll to see if new MBeans have become available

@@ -1,7 +1,7 @@
 package com.epickrram.monitaur.agent;
 
 import com.epickrram.monitaur.agent.collector.JmxCollector;
-import com.epickrram.monitaur.agent.domain.MonitorData;
+import com.epickrram.monitaur.common.domain.MonitorData;
 import com.epickrram.monitaur.common.util.Clock;
 
 import javax.management.MBeanServer;
@@ -30,13 +30,9 @@ public final class JmxMonitoringAgent
         scheduledExecutorService.scheduleAtFixedRate(new CollectorJob(), 0L, 1L, TimeUnit.SECONDS);
     }
 
-    public void addCollector(final JmxCollector collector)
+    public void setCollectors(final Collection<JmxCollector> collector)
     {
-        collectors.add(collector);
-    }
-
-    public void addCollectors(final Collection<JmxCollector> collector)
-    {
+        collectors.clear();
         collectors.addAll(collector);
     }
 

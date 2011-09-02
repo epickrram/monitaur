@@ -61,7 +61,7 @@ public final class MonitoringAgent
                         }
 
                         final JmxMonitoringAgent jmxMonitoringAgent = new JmxMonitoringAgent(publisher);
-                        jmxMonitoringAgent.addCollectors(jmxCollectors);
+                        jmxMonitoringAgent.setCollectors(jmxCollectors);
                         jmxMonitoringAgent.start(Executors.newSingleThreadScheduledExecutor());
                     }
                     catch (Exception e)
