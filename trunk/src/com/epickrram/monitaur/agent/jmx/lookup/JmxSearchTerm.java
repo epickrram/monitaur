@@ -59,7 +59,7 @@ public final class JmxSearchTerm
                 {
                     if(jmxSearchTerm.matches(objectName, attribute))
                     {
-                        return new AttributePath(objectName, attribute.getName());
+                        return new AttributePath(objectName, attribute);
                     }
                 }
             }

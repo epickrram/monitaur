@@ -2,7 +2,7 @@ package com.epickrram.monitaur.agent.config;
 
 import com.epickrram.monitaur.agent.collector.CalculatingNumberJmxCollector;
 import com.epickrram.monitaur.agent.collector.ConstantNumberCollector;
-import com.epickrram.monitaur.agent.collector.GuageCollector;
+import com.epickrram.monitaur.agent.collector.GaugeCollector;
 import com.epickrram.monitaur.agent.collector.JmxCollector;
 import com.epickrram.monitaur.agent.collector.NamedAttributeJmxCollector;
 import com.epickrram.monitaur.agent.jmx.AttributePath;
@@ -83,9 +83,9 @@ public final class ConfigParser implements JmxCollectorListener
                         new ConstantNumberCollector(getLogicalName(attributeMap),
                         Integer.valueOf(attributeMap.get("value"))));
             }
-            else if("guage".equals(nodeName))
+            else if("gauge".equals(nodeName))
             {
-                final GuageCollectorBuilder builder = new GuageCollectorBuilder();
+                final GaugeCollectorBuilder builder = new GaugeCollectorBuilder();
                 builder.onStart(getLogicalName(attributeMap));
                 listenerStack.push(builder);
             }
@@ -116,11 +116,11 @@ public final class ConfigParser implements JmxCollectorListener
         @Override
         public void endElement(final String s, final String s1, final String nodeName) throws SAXException
         {
-            // TODO node-name broken for nested guage/calculator collectors
-            if("guage".equals(nodeName))
+            // TODO node-name broken for nested gauge/calculator collectors
+            if("gauge".equals(nodeName))
             {
-                final GuageCollectorBuilder guageCollectorBuilder = (GuageCollectorBuilder) listenerStack.pop();
-                listenerStack.peek().receiveCollector(lastNodeName, guageCollectorBuilder.newInstance());
+                final GaugeCollectorBuilder gaugeCollectorBuilder = (GaugeCollectorBuilder) listenerStack.pop();
+                listenerStack.peek().receiveCollector(lastNodeName, gaugeCollectorBuilder.newInstance());
             }
             else if("calculatingNumberJmxCollector".equals(nodeName))
             {
@@ -144,38 +144,38 @@ public final class ConfigParser implements JmxCollectorListener
         }
     }
 
-    private static final class GuageCollectorBuilder implements JmxCollectorListener
+    private static final class GaugeCollectorBuilder implements JmxCollectorListener
     {
-        private Map<String, JmxCollector> guageCollectors = new HashMap<String, JmxCollector>();
+        private Map<String, JmxCollector> gaugeCollectors = new HashMap<String, JmxCollector>();
         private String logicalName = null;
 
         private void onStart(final String logicalName)
         {
             this.logicalName = logicalName;
-            guageCollectors.clear();
+            gaugeCollectors.clear();
         }
 
         @Override
         public void receiveCollector(final String nodeName, final JmxCollector collector)
         {
-            guageCollectors.put(nodeName, collector);
+            gaugeCollectors.put(nodeName, collector);
         }
 
-        private GuageCollector newInstance()
+        private GaugeCollector newInstance()
         {
-            validateGuageCollectors();
-            return new GuageCollector(logicalName,
-                            guageCollectors.get("guageMinimumValueCollector"),
-                            guageCollectors.get("guageCurrentValueCollector"),
-                            guageCollectors.get("guageMaximumValueCollector"));
+            validateGaugeCollectors();
+            return new GaugeCollector(logicalName,
+                            gaugeCollectors.get("gaugeMinimumValueCollector"),
+                            gaugeCollectors.get("gaugeCurrentValueCollector"),
+                            gaugeCollectors.get("gaugeMaximumValueCollector"));
         }
 
-        private void validateGuageCollectors()
+        private void validateGaugeCollectors()
         {
             // TODO check contains correct nodeNames
-            if(guageCollectors.size() != 3)
+            if(gaugeCollectors.size() != 3)
             {
-                throw new IllegalStateException("Invalid guage configuration. Should have exactly three child collectors.");
+                throw new IllegalStateException("Invalid gauge configuration. Should have exactly three child collectors.");
             }
         }
     }
@@ -232,7 +232,7 @@ public final class ConfigParser implements JmxCollectorListener
             try
             {
                 collector = new NamedAttributeJmxCollector(logicalName, attributePath.getObjectName(),
-                        attributePath.getAttributeName(), compositeKey);
+                        attributePath.getAttributeInfo(), compositeKey);
             }
             catch(Throwable t)
             {

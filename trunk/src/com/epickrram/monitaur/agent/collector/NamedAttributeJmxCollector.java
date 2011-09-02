@@ -1,10 +1,11 @@
 package com.epickrram.monitaur.agent.collector;
 
-import com.epickrram.monitaur.agent.domain.MonitorType;
+import com.epickrram.monitaur.common.domain.MonitorType;
 import com.epickrram.monitaur.common.logging.Logger;
 
 import javax.management.AttributeNotFoundException;
 import javax.management.InstanceNotFoundException;
+import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanException;
 import javax.management.MBeanServerConnection;
 import javax.management.ObjectName;
@@ -15,6 +16,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import static com.epickrram.monitaur.agent.collector.ConversionUtil.determineDataType;
+
 public final class NamedAttributeJmxCollector extends AbstractJmxCollector implements JmxCollector
 {
     private static final Logger LOGGER = Logger.getLogger(NamedAttributeJmxCollector.class);
@@ -23,17 +26,17 @@ public final class NamedAttributeJmxCollector extends AbstractJmxCollector imple
     private final String attributeName;
     private final String compositeDataKey;
 
-    public NamedAttributeJmxCollector(final String logicalName, final ObjectName objectName, final String attributeName)
+    public NamedAttributeJmxCollector(final String logicalName, final ObjectName objectName, final MBeanAttributeInfo attributeInfo)
     {
-        this(logicalName, objectName, attributeName, null);
+        this(logicalName, objectName, attributeInfo, null);
     }
 
     public NamedAttributeJmxCollector(final String logicalName, final ObjectName objectName,
-                                      final String attributeName, final String compositeDataKey)
+                                      final MBeanAttributeInfo attributeInfo, final String compositeDataKey)
     {
-        super(logicalName, MonitorType.SCALAR);
+        super(logicalName, MonitorType.SCALAR, determineDataType(attributeInfo));
         this.objectName = objectName;
-        this.attributeName = attributeName;
+        this.attributeName = attributeInfo.getName();
         this.compositeDataKey = compositeDataKey;
     }
 

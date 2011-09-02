@@ -1,22 +1,22 @@
 <?xml version='1.0'?>
 <monitaur>
     <jmx pollIntervalMillis="5000">
-        <guage logicalName="HeapMemoryUsage">
-            <guageMinimumValueCollector>
+        <gauge logicalName="HeapMemoryUsage">
+            <gaugeMinimumValueCollector>
                 <constantValueCollector value="0"/>
-            </guageMinimumValueCollector>
-            <guageCurrentValueCollector>
+            </gaugeMinimumValueCollector>
+            <gaugeCurrentValueCollector>
                 <jmxAttributeCollector objectName="Memory" attributeName="^HeapMemoryUsage" compositeKey="used"/>
-            </guageCurrentValueCollector>
-            <guageMaximumValueCollector>
+            </gaugeCurrentValueCollector>
+            <gaugeMaximumValueCollector>
                 <jmxAttributeCollector objectName="Memory" attributeName="^HeapMemoryUsage" compositeKey="max"/>
-            </guageMaximumValueCollector>
-        </guage>
-        <guage logicalName="ApplicationRingBuffer">
-            <guageMinimumValueCollector>
+            </gaugeMaximumValueCollector>
+        </gauge>
+        <gauge logicalName="ApplicationRingBuffer">
+            <gaugeMinimumValueCollector>
                 <constantValueCollector value="0"/>
-            </guageMinimumValueCollector>
-            <guageCurrentValueCollector>
+            </gaugeMinimumValueCollector>
+            <gaugeCurrentValueCollector>
                 <calculatingNumberJmxCollector operator="SUBTRACT">
                     <operandOne>
                         <constantValueCollector value="1024"/>
@@ -25,11 +25,11 @@
                         <jmxAttributeCollector objectName="Main,type=EventProcessing" attributeName="^RemainingCapacity"/>
                     </operandTwo>
                 </calculatingNumberJmxCollector>
-            </guageCurrentValueCollector>
-            <guageMaximumValueCollector>
+            </gaugeCurrentValueCollector>
+            <gaugeMaximumValueCollector>
                 <constantValueCollector value="1024"/>
-            </guageMaximumValueCollector>
-        </guage>
+            </gaugeMaximumValueCollector>
+        </gauge>
         <jmxAttributeCollector logicalName="LoadAverage" objectName="OperatingSystem" attributeName="^SystemLoadAverage"/>
     </jmx>
 </monitaur>
