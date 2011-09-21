@@ -13,7 +13,7 @@ public final class ConversionUtil
 
     public static DataType determineDataType(final MBeanAttributeInfo attributeInfo)
     {
-        return null;
+        return DataType.fromClassname(attributeInfo.getType());
     }
 
     public static Number add(final Object operandOne, final Object operandTwo)
