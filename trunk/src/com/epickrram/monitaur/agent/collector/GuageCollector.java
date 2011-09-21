@@ -1,7 +1,8 @@
 package com.epickrram.monitaur.agent.collector;
 
-import com.epickrram.monitaur.agent.domain.GuageData;
-import com.epickrram.monitaur.agent.domain.MonitorType;
+import com.epickrram.monitaur.common.domain.DataType;
+import com.epickrram.monitaur.common.domain.GaugeData;
+import com.epickrram.monitaur.common.domain.MonitorType;
 
 import javax.management.MBeanServerConnection;
 
@@ -18,18 +19,24 @@ public final class GuageCollector extends AbstractCollector<MBeanServerConnectio
                           final JmxCollector currentValueCollector,
                           final JmxCollector maximumValueCollector)
     {
-        super(logicalName, MonitorType.GUAGE);
+        super(logicalName, MonitorType.GAUGE, minimumValueCollector.getType());
         this.minimumValueCollector = minimumValueCollector;
         this.currentValueCollector = currentValueCollector;
         this.maximumValueCollector = maximumValueCollector;
     }
 
     @Override
-    public GuageData getValue(final MBeanServerConnection provider)
+    public GaugeData getValue(final MBeanServerConnection provider)
     {
         final Number minimum = toNumber(minimumValueCollector.getValue(provider));
         final Number current = toNumber(currentValueCollector.getValue(provider));
         final Number maximum = toNumber(maximumValueCollector.getValue(provider));
-        return new GuageData(minimum, maximum, current);
+        return new GaugeData(minimum, maximum, current);
+    }
+
+    @Override
+    public DataType getType()
+    {
+        return minimumValueCollector.getType();
     }
 }

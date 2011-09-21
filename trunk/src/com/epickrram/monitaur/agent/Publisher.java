@@ -4,5 +4,5 @@ import com.epickrram.monitaur.common.domain.MonitorData;
 
 public interface Publisher
 {
-    <T> void publish(final MonitorData<T> data);
+    void publish(final MonitorData data);
 }
