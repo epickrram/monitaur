@@ -43,6 +43,6 @@ public final class GaugeCollector extends AbstractCollector<MBeanServerConnectio
     @Override
     public DataType getType()
     {
-        return null;
+        return minimumValueCollector.getType();
     }
 }

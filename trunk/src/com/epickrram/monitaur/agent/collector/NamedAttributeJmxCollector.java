@@ -26,11 +26,6 @@ public final class NamedAttributeJmxCollector extends AbstractJmxCollector imple
     private final String attributeName;
     private final String compositeDataKey;
 
-    public NamedAttributeJmxCollector(final String logicalName, final ObjectName objectName, final MBeanAttributeInfo attributeInfo)
-    {
-        this(logicalName, objectName, attributeInfo, null);
-    }
-
     public NamedAttributeJmxCollector(final String logicalName, final ObjectName objectName,
                                       final MBeanAttributeInfo attributeInfo, final String compositeDataKey)
     {
