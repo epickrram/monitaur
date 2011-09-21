@@ -12,7 +12,7 @@ public final class CompositePublisher implements Publisher
     }
 
     @Override
-    public <T> void publish(final MonitorData<T> data)
+    public void publish(final MonitorData data)
     {
         for (Publisher publisher : publishers)
         {

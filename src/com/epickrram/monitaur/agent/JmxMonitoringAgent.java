@@ -45,8 +45,8 @@ public final class JmxMonitoringAgent
             {
                 try
                 {
-                    final MonitorData<Object> value =
-                            new MonitorData<Object>(collector.getMonitorType(), collector.getLogicalName(),
+                    final MonitorData value =
+                            new MonitorData(collector.getMonitorType(), collector.getLogicalName(),
                                     collector.getHostName(), collector.getValue(platformMBeanServer), Clock.getCurrentMillis());
                     publisher.publish(value);
                 }

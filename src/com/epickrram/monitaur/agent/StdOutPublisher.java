@@ -10,7 +10,7 @@ public final class StdOutPublisher implements Publisher
 {
     private final DateFormat formatter = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
 
-    public <T> void publish(final MonitorData<T> data)
+    public void publish(final MonitorData data)
     {
         System.out.println(formatter.format(new Date(data.getTimestamp())) + ", type: " + data.getMonitorType() + " - " + data.getLogicalName() + "=" + data.getDatumAsString());
     }
