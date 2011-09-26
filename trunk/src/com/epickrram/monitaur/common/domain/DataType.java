@@ -2,12 +2,24 @@ package com.epickrram.monitaur.common.domain;
 
 public enum DataType
 {
-    INTEGER,
-    LONG,
-    DOUBLE,
-    FLOAT,
-    STRING,
-    OBJECT;
+    INTEGER(true),
+    LONG(true),
+    DOUBLE(true),
+    FLOAT(true),
+    STRING(false),
+    OBJECT(false);
+
+    private final boolean isNumber;
+
+    private DataType(final boolean number)
+    {
+        isNumber = number;
+    }
+
+    public boolean isNumber()
+    {
+        return isNumber;
+    }
 
     public static DataType fromClassname(final String cls)
     {

@@ -63,26 +63,42 @@ public final class ConversionUtil
     public static <T extends Number> DataType determineNumberDataType(final T value)
     {
         final DataType dataType;
-        if(Integer.class.equals(value.getClass()))
+        if(isType(value, Integer.class, int.class))
         {
             dataType = DataType.INTEGER;
         }
-        else if(Long.class.equals(value.getClass()))
+        else if(isType(value, Long.class, long.class))
         {
             dataType = DataType.LONG;
         }
-        else if(Float.class.equals(value.getClass()))
+        else if(isType(value, Float.class, float.class))
         {
             dataType = DataType.FLOAT;
         }
-        else if(Double.class.equals(value.getClass()))
+        else if(isType(value, Double.class, double.class))
         {
             dataType = DataType.DOUBLE;
         }
         else
         {
-            dataType = DataType.OBJECT;
+            throw new IllegalArgumentException("Can't convert value " + value + " to Number");
         }
         return dataType;
+    }
+
+    private static boolean isType(final Object value, final Class... matchingClasses)
+    {
+        final Class valueClass = value.getClass();
+        boolean matches = false;
+        for (Class matchingClass : matchingClasses)
+        {
+            if(matchingClass.equals(valueClass))
+            {
+                matches = true;
+                break;
+            }
+        }
+
+        return matches;
     }
 }
