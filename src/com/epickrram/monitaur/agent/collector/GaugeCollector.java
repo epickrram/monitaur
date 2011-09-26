@@ -20,15 +20,19 @@ public final class GaugeCollector extends AbstractCollector<MBeanServerConnectio
                           final JmxCollector maximumValueCollector)
     {
         super(logicalName, MonitorType.GAUGE, minimumValueCollector.getType());
-        validate();
         this.minimumValueCollector = minimumValueCollector;
         this.currentValueCollector = currentValueCollector;
         this.maximumValueCollector = maximumValueCollector;
+        validate();
     }
 
     private void validate()
     {
-        // TODO check that all return types are the same
+        if(!(minimumValueCollector.getType() == currentValueCollector.getType() &&
+                currentValueCollector.getType() == maximumValueCollector.getType()))
+        {
+            throw new IllegalArgumentException("All gauge value collectors must be the same DataType");
+        }
     }
 
     @Override

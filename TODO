@@ -1,1 +1,2 @@
-- JMX Monitor Agent should periodically poll to see if new MBeans have become available
+- JMX Monitor Agent should periodically poll to see if new MBeans have become available.
+- entry point via abstract class? Guice? - alternative to XML.

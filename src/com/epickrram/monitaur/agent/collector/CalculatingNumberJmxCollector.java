@@ -27,7 +27,10 @@ public final class CalculatingNumberJmxCollector extends AbstractJmxCollector im
 
     private void validate()
     {
-        // TODO check that operands are compatible
+        if(!(operandOne.getType().isNumber() && operandTwo.getType().isNumber()))
+        {
+            throw new IllegalArgumentException("Both operands must be collectors of java.lang.Number");
+        }
     }
 
     @Override
@@ -39,7 +42,7 @@ public final class CalculatingNumberJmxCollector extends AbstractJmxCollector im
         switch(operator)
         {
             case ADD:
-                value = add(valueOne, valueTwo);
+                    value = add(valueOne, valueTwo);
                 break;
             case SUBTRACT:
                     value = subtract(valueOne, valueTwo);
