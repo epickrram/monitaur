@@ -1,6 +1,4 @@
-package com.epickrram.monitaur.agent.jmx.lookup;
-
-import com.epickrram.monitaur.agent.jmx.AttributePath;
+package com.epickrram.monitaur.agent.jmx;
 
 import javax.management.InstanceNotFoundException;
 import javax.management.IntrospectionException;
@@ -13,12 +11,12 @@ import java.lang.management.ManagementFactory;
 import java.util.Set;
 import java.util.regex.Pattern;
 
-public final class JmxSearchTerm
+public final class JmxAttributeFinder
 {
     private final Pattern mbeanNameRegex;
     private final Pattern attributeRegex;
 
-    public JmxSearchTerm(final String mbeanNameRegex, final String attributeRegex)
+    public JmxAttributeFinder(final String mbeanNameRegex, final String attributeRegex)
     {
         if(mbeanNameRegex == null && attributeRegex == null)
         {
@@ -28,25 +26,8 @@ public final class JmxSearchTerm
         this.attributeRegex = attributeRegex == null ? null : Pattern.compile(attributeRegex);
     }
 
-    @Override
-    public String toString()
+    public JmxAttributeDetails findAttribute()
     {
-        return "JmxSearchTerm{" +
-                "mbeanNameRegex=" + mbeanNameRegex.pattern() +
-                ", attributeRegex=" + attributeRegex.pattern() +
-                '}';
-    }
-
-    public boolean matches(final ObjectName objectName, final MBeanAttributeInfo attribute)
-    {
-        final boolean objectNameMatches = mbeanNameRegex == null || mbeanNameRegex.matcher(objectName.getCanonicalName()).find();
-        final boolean attributeNameMatches = attributeRegex == null || attributeRegex.matcher(attribute.getName()).find();
-        return objectNameMatches && attributeNameMatches;
-    }
-
-    public static AttributePath searchAttributes(final String objectNameRegex, final String attributeRegex)
-    {
-        final JmxSearchTerm jmxSearchTerm = new JmxSearchTerm(objectNameRegex, attributeRegex);
         final MBeanServer platformMBeanServer = ManagementFactory.getPlatformMBeanServer();
         final Set<ObjectName> objectNames = platformMBeanServer.queryNames(null, null);
         try
@@ -57,9 +38,9 @@ public final class JmxSearchTerm
                 final MBeanAttributeInfo[] attributes = mBeanInfo.getAttributes();
                 for (MBeanAttributeInfo attribute : attributes)
                 {
-                    if(jmxSearchTerm.matches(objectName, attribute))
+                    if(matches(objectName, attribute))
                     {
-                        return new AttributePath(objectName, attribute);
+                        return new JmxAttributeDetails(objectName, attribute);
                     }
                 }
             }
@@ -77,5 +58,21 @@ public final class JmxSearchTerm
             throw new RuntimeException("Unable to query MBeans", e);
         }
         return null;
+    }
+
+    @Override
+    public String toString()
+    {
+        return "JmxAttributeFinder{" +
+                "mbeanNameRegex=" + mbeanNameRegex.pattern() +
+                ", attributeRegex=" + attributeRegex.pattern() +
+                '}';
+    }
+
+    private boolean matches(final ObjectName objectName, final MBeanAttributeInfo attribute)
+    {
+        final boolean objectNameMatches = mbeanNameRegex == null || mbeanNameRegex.matcher(objectName.getCanonicalName()).find();
+        final boolean attributeNameMatches = attributeRegex == null || attributeRegex.matcher(attribute.getName()).find();
+        return objectNameMatches && attributeNameMatches;
     }
 }
