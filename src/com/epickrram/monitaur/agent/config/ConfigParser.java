@@ -5,8 +5,8 @@ import com.epickrram.monitaur.agent.collector.ConstantNumberCollector;
 import com.epickrram.monitaur.agent.collector.GaugeCollector;
 import com.epickrram.monitaur.agent.collector.JmxCollector;
 import com.epickrram.monitaur.agent.collector.NamedAttributeJmxCollector;
-import com.epickrram.monitaur.agent.jmx.AttributePath;
-import com.epickrram.monitaur.agent.jmx.lookup.JmxSearchTerm;
+import com.epickrram.monitaur.agent.jmx.JmxAttributeDetails;
+import com.epickrram.monitaur.agent.jmx.JmxAttributeFinder;
 import com.epickrram.monitaur.common.logging.Logger;
 import org.xml.sax.Attributes;
 import org.xml.sax.SAXException;
@@ -225,14 +225,14 @@ public final class ConfigParser implements JmxCollectorListener
         final String compositeKey = attributes.get("compositeKey");
         final String logicalName = attributes.get("logicalName");
 
-        final AttributePath attributePath = JmxSearchTerm.searchAttributes(objectNameRegex, attributeNameRegex);
+        final JmxAttributeDetails jmxAttributeDetails = new JmxAttributeFinder(objectNameRegex, attributeNameRegex).findAttribute();
         JmxCollector collector = null;
-        if(attributePath != null)
+        if(jmxAttributeDetails != null)
         {
             try
             {
-                collector = new NamedAttributeJmxCollector(logicalName, attributePath.getObjectName(),
-                        attributePath.getAttributeInfo(), compositeKey);
+                collector = new NamedAttributeJmxCollector(logicalName, jmxAttributeDetails.getObjectName(),
+                        jmxAttributeDetails.getAttributeInfo(), compositeKey);
             }
             catch(Throwable t)
             {
