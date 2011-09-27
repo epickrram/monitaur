@@ -1,17 +1,12 @@
 package com.epickrram.monitaur.agent;
 
-import com.epickrram.monitaur.agent.collector.JmxCollector;
-import com.epickrram.monitaur.agent.config.ConfigParser;
 import com.epickrram.monitaur.agent.instrumentation.Transformer;
 import com.epickrram.monitaur.common.logging.Logger;
 
-import javax.swing.*;
-import java.awt.*;
-import java.io.File;
-import java.io.FileInputStream;
-import java.io.InputStream;
+import javax.swing.JFrame;
+import java.awt.BorderLayout;
+import java.awt.Container;
 import java.lang.instrument.Instrumentation;
-import java.util.Collection;
 import java.util.concurrent.Executors;
 
 public final class MonitoringAgent
@@ -37,12 +32,6 @@ public final class MonitoringAgent
                     Thread.sleep(30000L);
                     try
                     {
-                        final ConfigParser configParser = new ConfigParser();
-                        final File file = new File(System.getProperty("monitaur.agent.config"));
-                        final InputStream resourceAsStream = new FileInputStream(file);
-
-                        configParser.parse(resourceAsStream);
-                        final Collection<JmxCollector> jmxCollectors = configParser.getJmxCollectors();
                         final Publisher publisher;
                         if(Boolean.valueOf(System.getProperty("monitaur.ui")))
                         {
@@ -61,7 +50,6 @@ public final class MonitoringAgent
                         }
 
                         final JmxMonitoringAgent jmxMonitoringAgent = new JmxMonitoringAgent(publisher);
-                        jmxMonitoringAgent.setCollectors(jmxCollectors);
                         jmxMonitoringAgent.start(Executors.newSingleThreadScheduledExecutor());
                     }
                     catch (Exception e)

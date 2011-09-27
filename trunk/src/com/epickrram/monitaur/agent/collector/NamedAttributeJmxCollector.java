@@ -35,6 +35,11 @@ public final class NamedAttributeJmxCollector extends AbstractJmxCollector imple
         this.compositeDataKey = compositeDataKey;
     }
 
+    public NamedAttributeJmxCollector(final String logicalName, final ObjectName objectName, final MBeanAttributeInfo attributeInfo)
+    {
+        this(logicalName, objectName, attributeInfo, null);
+    }
+
     @SuppressWarnings({"unchecked"})
     @Override
     public Object getValue(final MBeanServerConnection jmxServerConnection)
