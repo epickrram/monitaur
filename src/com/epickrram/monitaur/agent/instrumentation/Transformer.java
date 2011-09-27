@@ -25,7 +25,6 @@ public final class Transformer implements ClassFileTransformer
         }
         catch (NotFoundException nfe)
         {
-            System.err.println("NotFoundException: " + nfe.getMessage() + "; transforming class " + className + "; returning uninstrumented class");
             return classfileBuffer;
         }
         try
@@ -36,16 +35,11 @@ public final class Transformer implements ClassFileTransformer
             {
                 try
                 {
-                    if(cc.getName().contains("TestObject"))
-                    {
-                        System.out.println("Processing " + method.getName());
-                    }
                     final MonitorLatency annotation = (MonitorLatency) method.getAnnotation(MonitorLatency.class);
                     if(annotation != null)
                     {
                         cc.addField(CtField.make("private static final ThreadLocal METHOD_DURATION = new ThreadLocal();", cc));
 
-                        System.out.println("Processing method: " + method.getName());
                         method.insertBefore("{" +
                                            "METHOD_DURATION.set(Long.valueOf(System.nanoTime()));}");
                         method.insertAfter("{final long durationNanos = System.nanoTime() - ((Long) METHOD_DURATION.get()).longValue();\n" +
@@ -66,12 +60,10 @@ public final class Transformer implements ClassFileTransformer
             }
             catch (IOException ioe)
             {
-                System.err.println("IOException: " + ioe.getMessage() + "; transforming class " + className + "; returning uninstrumented class");
                 return null;
             }
             catch (CannotCompileException cce)
             {
-                System.err.println("CannotCompileException: " + cce.getMessage() + "; transforming class " + className + "; returning uninstrumented class");
                 return null;
             }
             return newClassfileBuffer;
