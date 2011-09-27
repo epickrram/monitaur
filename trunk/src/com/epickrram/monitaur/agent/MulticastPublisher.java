@@ -1,9 +1,23 @@
+/*
+Copyright 2011 Mark Price
+
+   Licensed under the Apache License, Version 2.0 (the "License");
+   you may not use this file except in compliance with the License.
+   You may obtain a copy of the License at
+
+       http://www.apache.org/licenses/LICENSE-2.0
+
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+ */
 package com.epickrram.monitaur.agent;
 
 import com.epickrram.monitaur.common.domain.MonitorData;
 import com.epickrram.monitaur.common.io.CodeBook;
 import com.epickrram.monitaur.common.io.EncoderStream;
-import com.epickrram.monitaur.common.io.NetUtil;
 import com.epickrram.monitaur.common.io.PackerEncoderStream;
 import com.epickrram.monitaur.common.logging.Logger;
 import org.msgpack.packer.MessagePackPacker;
@@ -12,11 +26,8 @@ import org.msgpack.packer.Packer;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
-import java.net.InetAddress;
 import java.net.MulticastSocket;
 import java.net.SocketAddress;
-
-import static com.epickrram.monitaur.common.io.NetUtil.getMulticastCapableAddress;
 
 public final class MulticastPublisher implements Publisher
 {
