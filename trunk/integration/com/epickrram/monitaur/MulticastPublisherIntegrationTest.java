@@ -26,57 +26,127 @@ import org.junit.Before;
 import org.junit.Test;
 
 import java.net.InetAddress;
-import java.net.InetSocketAddress;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.CopyOnWriteArrayList;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import static org.hamcrest.Matchers.equalTo;
+import static org.hamcrest.Matchers.is;
+import static org.junit.Assert.assertThat;
+
 public final class MulticastPublisherIntegrationTest
 {
-    private MulticastPublisher multicastPublisher;
-    private InetSocketAddress socketAddress;
+    private List<MulticastReceiver> receiverList = new ArrayList<MulticastReceiver>();
     private ClassnameCodeBook codeBook = new ClassnameCodeBook();
     private ExecutorService executorService;
-    private MulticastReceiver multicastReceiver;
-    private CountDownLatch messageReceivedLatch = new CountDownLatch(2);
+    private MonitorData data1;
+    private MonitorData data2;
+    private InetAddress inetAddress;
 
     @Test
     public void shouldPublishMessagesToMulticastAddress() throws Exception
     {
-        multicastReceiver.start();
+        final int port = 14000;
+        final MulticastPublisher publisher = createPublisher(port);
+        final int numberOfMessages = 2;
+        final StubMonitorDataHandler handler = createReceiver(port, numberOfMessages);
 
-        multicastPublisher.publish(new MonitorData(MonitorType.SCALAR, "logicalName1", "hostname", Integer.MAX_VALUE, System.currentTimeMillis()));
-        multicastPublisher.publish(new MonitorData(MonitorType.SCALAR, "logicalName2", "hostname", "foobar", System.currentTimeMillis()));
+        publisher.publish(data1);
+        publisher.publish(data2);
 
-        messageReceivedLatch.await();
+        handler.getMessageReceivedLatch().await();
+        assertThat(data1, equalTo(handler.getReceivedMessages().get(0)));
+        assertThat(data2, equalTo(handler.getReceivedMessages().get(1)));
+        assertThat(2, is(handler.getReceivedMessages().size()));
+    }
+
+    @Test
+    public void shouldPublishMessagesToSpecifiedPortOnly() throws Exception
+    {
+        final int numberOfMessages = 1;
+        final int port = 14000;
+        final MulticastPublisher publisher = createPublisher(port);
+        final StubMonitorDataHandler handler = createReceiver(port, numberOfMessages);
+        final int port2 = 14010;
+        final MulticastPublisher publisher2 = createPublisher(port2);
+        final StubMonitorDataHandler handler2 = createReceiver(port2, numberOfMessages);
+
+        publisher.publish(data1);
+        publisher2.publish(data2);
+
+        handler.getMessageReceivedLatch().await();
+        handler2.getMessageReceivedLatch().await();
+
+        assertThat(data1, equalTo(handler.getReceivedMessages().get(0)));
+        assertThat(1, is(handler.getReceivedMessages().size()));
+        assertThat(data2, equalTo(handler2.getReceivedMessages().get(0)));
+        assertThat(1, is(handler2.getReceivedMessages().size()));
     }
 
     @Before
     public void before() throws Exception
     {
-        socketAddress = new InetSocketAddress(InetAddress.getByName("239.0.0.1"), 14000);
-        multicastPublisher = new MulticastPublisher(codeBook, socketAddress, 14000, "239.0.0.1");
-        executorService = Executors.newSingleThreadExecutor();
-        multicastReceiver = new MulticastReceiver(codeBook, socketAddress, executorService, new StubMonitorDataHandler());
-
+        executorService = Executors.newCachedThreadPool();
+     
         final MonitorData.WireFormat wireFormat = new MonitorData.WireFormat();
         codeBook.registerHandlers(MonitorData.class.getName(), wireFormat, wireFormat);
+        data1 = new MonitorData(MonitorType.SCALAR, "logicalName1", "hostname", Integer.MAX_VALUE, System.currentTimeMillis());
+        data2 = new MonitorData(MonitorType.SCALAR, "logicalName2", "hostname", "foobar", System.currentTimeMillis());
+        inetAddress = InetAddress.getByName("239.0.0.1");
     }
 
     @After
     public void after() throws Exception
     {
-        multicastReceiver.stop();
+        for (MulticastReceiver multicastReceiver : receiverList)
+        {
+            multicastReceiver.stop();
+        }
         executorService.shutdown();
     }
 
-    private class StubMonitorDataHandler implements MonitorDataHandler
+    private StubMonitorDataHandler createReceiver(final int port, final int expectedMessageCount) throws InterruptedException
     {
+        final StubMonitorDataHandler dataHandler = new StubMonitorDataHandler(expectedMessageCount);
+        final MulticastReceiver multicastReceiver = new MulticastReceiver(codeBook, inetAddress, port, executorService, dataHandler);
+        multicastReceiver.start();
+        receiverList.add(multicastReceiver);
+        return dataHandler;
+    }
+
+    private MulticastPublisher createPublisher(final int port)
+    {
+        return new MulticastPublisher(codeBook, inetAddress, port);
+    }
+
+    private static final class StubMonitorDataHandler implements MonitorDataHandler
+    {
+        private final CountDownLatch messageReceivedLatch;
+        private final List<MonitorData> receivedMessages = new CopyOnWriteArrayList<MonitorData>();
+
+        public StubMonitorDataHandler(final int expectedMessageCount)
+        {
+            this.messageReceivedLatch = new CountDownLatch(expectedMessageCount);
+        }
+
         @Override
         public void onMonitorData(final MonitorData data)
         {
-            System.out.println("Received monitorData: " + data);
-            messageReceivedLatch.countDown();
+            receivedMessages.add(data);
+            this.messageReceivedLatch.countDown();
+        }
+
+        public List<MonitorData> getReceivedMessages()
+        {
+            return receivedMessages;
+        }
+
+        public CountDownLatch getMessageReceivedLatch()
+        {
+            return messageReceivedLatch;
         }
     }
 }

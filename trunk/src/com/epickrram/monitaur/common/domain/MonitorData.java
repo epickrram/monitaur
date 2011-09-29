@@ -81,6 +81,34 @@ public final class MonitorData
                 '}';
     }
 
+    @Override
+    public boolean equals(final Object o)
+    {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        final MonitorData that = (MonitorData) o;
+
+        if (timestamp != that.timestamp) return false;
+        if (datum != null ? !datum.equals(that.datum) : that.datum != null) return false;
+        if (host != null ? !host.equals(that.host) : that.host != null) return false;
+        if (logicalName != null ? !logicalName.equals(that.logicalName) : that.logicalName != null) return false;
+        if (monitorType != that.monitorType) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int result = monitorType != null ? monitorType.hashCode() : 0;
+        result = 31 * result + (logicalName != null ? logicalName.hashCode() : 0);
+        result = 31 * result + (host != null ? host.hashCode() : 0);
+        result = 31 * result + (datum != null ? datum.hashCode() : 0);
+        result = 31 * result + (int) (timestamp ^ (timestamp >>> 32));
+        return result;
+    }
+
     public static final class WireFormat implements Encoder<MonitorData>, Decoder<MonitorData>
     {
         @Override

@@ -26,6 +26,8 @@ import org.msgpack.packer.Packer;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
 import java.net.SocketAddress;
 
@@ -34,19 +36,14 @@ public final class MulticastPublisher implements Publisher
     private static final Logger LOGGER = Logger.getLogger(MulticastPublisher.class);
     private final CodeBook<String> codeBook;
     private final SocketAddress multicastAddress;
-    private final int port;
-    private final String ipAddress;
     private final MulticastSocket multicastSocket;
 
     public MulticastPublisher(final CodeBook<String> codeBook,
-                              final SocketAddress multicastAddress,
-                              final int port,
-                              final String ipAddress)
+                              final InetAddress multicastAddress,
+                              final int port)
     {
         this.codeBook = codeBook;
-        this.multicastAddress = multicastAddress;
-        this.port = port;
-        this.ipAddress = ipAddress;
+        this.multicastAddress = new InetSocketAddress(multicastAddress, port);
         try
         {
             multicastSocket = new MulticastSocket(port);
