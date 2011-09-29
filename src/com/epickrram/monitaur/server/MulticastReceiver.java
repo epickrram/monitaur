@@ -25,8 +25,9 @@ import org.msgpack.unpacker.MessagePackUnpacker;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.net.DatagramPacket;
+import java.net.InetAddress;
+import java.net.InetSocketAddress;
 import java.net.MulticastSocket;
-import java.net.SocketAddress;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -43,7 +44,8 @@ public final class MulticastReceiver
     private final AtomicBoolean running = new AtomicBoolean(true);
 
     public MulticastReceiver(final CodeBook<String> codeBook,
-                             final SocketAddress multicastAddress,
+                             final InetAddress inetAddress,
+                             final int port,
                              final ExecutorService executorService,
                              final MonitorDataHandler handler)
     {
@@ -52,6 +54,7 @@ public final class MulticastReceiver
         this.handler = handler;
         try
         {
+            final InetSocketAddress multicastAddress = new InetSocketAddress(inetAddress, port);
             multicastSocket = new MulticastSocket(multicastAddress);
             multicastSocket.joinGroup(multicastAddress, getMulticastCapableAddress());
         }
