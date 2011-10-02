@@ -1,0 +1,10 @@
+.graphElement
+{
+    width: 600px;
+    height: 400px;
+}
+
+.error
+{
+    color: #c00;
+}

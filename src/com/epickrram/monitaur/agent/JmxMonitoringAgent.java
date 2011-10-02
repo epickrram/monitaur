@@ -25,6 +25,8 @@ import com.epickrram.monitaur.common.util.Clock;
 
 import javax.management.MBeanServer;
 import java.lang.management.ManagementFactory;
+import java.net.Inet4Address;
+import java.net.UnknownHostException;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledExecutorService;
@@ -33,16 +35,19 @@ import java.util.concurrent.TimeUnit;
 public final class JmxMonitoringAgent implements JmxMonitoringRequestListener
 {
     private static final Logger LOGGER = Logger.getLogger(JmxMonitoringAgent.class);
-    
+    private static final String AGENT_ID_CONFIG_PARAM = "monitaur.agentId";
+
     private final Publisher publisher;
     private final MBeanServer platformMBeanServer;
     private final Queue<JmxCollector> collectors = new ConcurrentLinkedQueue<JmxCollector>();
+    private final String agentId;
 
     public JmxMonitoringAgent(final Publisher publisher)
     {
         this.publisher = publisher;
         new JmxMonitoringManagerImpl(this).registerSelf();
         platformMBeanServer = ManagementFactory.getPlatformMBeanServer();
+        agentId = getAgentId();
     }
 
     public void start(final ScheduledExecutorService scheduledExecutorService)
@@ -94,7 +99,7 @@ public final class JmxMonitoringAgent implements JmxMonitoringRequestListener
                 {
                     final MonitorData value =
                             new MonitorData(collector.getMonitorType(), collector.getLogicalName(),
-                                    collector.getHostName(), collector.getValue(platformMBeanServer), Clock.getCurrentMillis());
+                                    agentId, collector.getValue(platformMBeanServer), Clock.getCurrentMillis());
                     LOGGER.info("Retrieved data: " + value);
                     publisher.publish(value);
                 }
@@ -103,6 +108,25 @@ public final class JmxMonitoringAgent implements JmxMonitoringRequestListener
                     LOGGER.error("Failed to poll collector " + collector, e);
                 }
             }
+        }
+    }
+
+    private String getAgentId()
+    {
+        return System.getProperty(AGENT_ID_CONFIG_PARAM) != null ?
+                System.getProperty(AGENT_ID_CONFIG_PARAM) :
+                getLocalHostName();
+    }
+
+    private String getLocalHostName()
+    {
+        try
+        {
+            return Inet4Address.getLocalHost().getHostName();
+        }
+        catch (UnknownHostException e)
+        {
+            throw new IllegalStateException("Cannot determine local hostname", e);
         }
     }
 }
