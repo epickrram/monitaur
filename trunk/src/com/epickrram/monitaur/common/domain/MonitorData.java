@@ -109,7 +109,7 @@ public final class MonitorData
         return result;
     }
 
-    public static final class WireFormat implements Encoder<MonitorData>, Decoder<MonitorData>
+    public static final class Translator implements Encoder<MonitorData>, Decoder<MonitorData>
     {
         @Override
         public void encode(final MonitorData encodable, final EncoderStream encoderStream) throws IOException

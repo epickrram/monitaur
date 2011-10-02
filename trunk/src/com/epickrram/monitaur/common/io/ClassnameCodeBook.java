@@ -49,14 +49,17 @@ public final class ClassnameCodeBook implements CodeBook<String>
 
     private void registerStandardHandlers()
     {
-        final IntegerWireFormat integerWireFormat = new IntegerWireFormat();
-        registerHandlers(Integer.class.getName(), integerWireFormat, integerWireFormat);
-        registerHandlers(int.class.getName(), integerWireFormat, integerWireFormat);
-        final StringWireFormat stringWireFormat = new StringWireFormat();
-        registerHandlers(String.class.getName(), stringWireFormat, stringWireFormat);
+        final IntegerTranslator integerTranslator = new IntegerTranslator();
+        registerHandlers(Integer.class.getName(), integerTranslator, integerTranslator);
+        registerHandlers(int.class.getName(), integerTranslator, integerTranslator);
+        final StringTranslator stringTranslator = new StringTranslator();
+        registerHandlers(String.class.getName(), stringTranslator, stringTranslator);
+        final LongTranslator longTranslator = new LongTranslator();
+        registerHandlers(Long.class.getName(), longTranslator, longTranslator);
+        registerHandlers(long.class.getName(), longTranslator, longTranslator);
     }
 
-    private static final class StringWireFormat implements Encoder<String>, Decoder<String>
+    private static final class StringTranslator implements Encoder<String>, Decoder<String>
     {
         @Override
         public String decode(final DecoderStream decoderStream) throws IOException
@@ -71,7 +74,7 @@ public final class ClassnameCodeBook implements CodeBook<String>
         }
     }
 
-    private static final class IntegerWireFormat implements Encoder<Integer>, Decoder<Integer>
+    private static final class IntegerTranslator implements Encoder<Integer>, Decoder<Integer>
     {
         @Override
         public void encode(final Integer encodable, final EncoderStream encoderStream) throws IOException
@@ -83,6 +86,21 @@ public final class ClassnameCodeBook implements CodeBook<String>
         public Integer decode(final DecoderStream decoderStream) throws IOException
         {
             return decoderStream.readInt();
+        }
+    }
+
+    private static final class LongTranslator implements Encoder<Long>, Decoder<Long>
+    {
+        @Override
+        public void encode(final Long encodable, final EncoderStream encoderStream) throws IOException
+        {
+            encoderStream.writeLong(encodable);
+        }
+
+        @Override
+        public Long decode(final DecoderStream decoderStream) throws IOException
+        {
+            return decoderStream.readLong();
         }
     }
 }

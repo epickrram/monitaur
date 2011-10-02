@@ -1,2 +1,19 @@
 - JMX Monitor Agent should periodically poll to see if new MBeans have become available.
 - entry point via abstract class? Guice? - alternative to XML.
+- use Transformer to auto-register codebook entries:
+
+final Class<?>[] declaredClasses = MonitorData.class.getDeclaredClasses();
+for (int i = 0; i < declaredClasses.length; i++)
+{
+    Class<?> declaredClass = declaredClasses[i];
+    if("Translator".equals(declaredClass.getName()))
+    {
+        System.err.println(declaredClass.getName());
+        final Method[] methods = declaredClass.getMethods();
+        for (int j = 0; j < methods.length; j++)
+        {
+            Method method = methods[j];
+            System.err.println(method.getName());
+        }
+    }
+}

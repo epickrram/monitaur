@@ -56,11 +56,16 @@ public final class MulticastPublisher implements Publisher
 
     public void publish(final MonitorData data)
     {
+        LOGGER.info("Attempting to publish: " + data);
         final ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
+        LOGGER.info("new output stream");
         final Packer packer = new MessagePackPacker(outputStream);
+        LOGGER.info("new packer");
         final EncoderStream encoderStream = new PackerEncoderStream(codeBook, packer);
+        LOGGER.info("new encoder stream");
         try
         {
+            LOGGER.info("About to encode..");
             encoderStream.writeObject(data);
             LOGGER.info("Created a message of " + outputStream.size() + " bytes");
             final DatagramPacket packet = new DatagramPacket(outputStream.toByteArray(), 0, outputStream.size());
@@ -71,6 +76,7 @@ public final class MulticastPublisher implements Publisher
         }
         catch (IOException e)
         {
+            LOGGER.error("Unable to publish message", e);
             throw new RuntimeException("Unable to publish message", e);
         }
     }
