@@ -17,3 +17,5 @@ for (int i = 0; i < declaredClasses.length; i++)
         }
     }
 }
+
+- canonical MBean name is not always as it appears in jconsole

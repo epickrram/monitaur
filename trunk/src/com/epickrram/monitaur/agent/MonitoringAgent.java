@@ -18,7 +18,6 @@ package com.epickrram.monitaur.agent;
 import com.epickrram.monitaur.agent.instrumentation.Transformer;
 import com.epickrram.monitaur.common.domain.MonitorData;
 import com.epickrram.monitaur.common.io.ClassnameCodeBook;
-import com.epickrram.monitaur.common.logging.Logger;
 
 import javax.swing.JFrame;
 import java.awt.BorderLayout;
@@ -29,8 +28,6 @@ import java.util.concurrent.Executors;
 
 public final class MonitoringAgent
 {
-    private static final Logger LOGGER = Logger.getLogger(MonitoringAgent.class);
-
     public static void premain(final String agentArgs, final Instrumentation instrumentation)
     {
         instrumentation.addTransformer(new Transformer());
@@ -70,6 +67,8 @@ public final class MonitoringAgent
 
                     final JmxMonitoringAgent jmxMonitoringAgent = new JmxMonitoringAgent(publisher);
                     jmxMonitoringAgent.start(Executors.newSingleThreadScheduledExecutor());
+//                    jmxMonitoringAgent.monitorNamedCompositeAttribute("HeapUsedBytes", ".*Memory$", "HeapMemoryUsage", "used");
+//                    jmxMonitoringAgent.monitorNamedCompositeAttribute("EdenUsedBytes", ".*PS Eden Space", "^Usage$", "used");
                 }
                 catch (Exception e)
                 {

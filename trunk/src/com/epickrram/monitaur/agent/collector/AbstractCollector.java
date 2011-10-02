@@ -1,5 +1,5 @@
 /*
-Copyright 2011 Mark Price
+Copyright [2011] [Mark price]
 
    Licensed under the Apache License, Version 2.0 (the "License");
    you may not use this file except in compliance with the License.
@@ -18,13 +18,9 @@ package com.epickrram.monitaur.agent.collector;
 import com.epickrram.monitaur.common.domain.DataType;
 import com.epickrram.monitaur.common.domain.MonitorType;
 
-import java.net.InetAddress;
-import java.net.UnknownHostException;
-
 public abstract class AbstractCollector<ProviderType> implements Collector<ProviderType>
 {
     private final String logicalName;
-    private final String hostName;
     private final MonitorType monitorType;
     private final DataType dataType;
 
@@ -33,26 +29,12 @@ public abstract class AbstractCollector<ProviderType> implements Collector<Provi
         this.logicalName = logicalName;
         this.monitorType = monitorType;
         this.dataType = dataType;
-        try
-        {
-            hostName = InetAddress.getLocalHost().getHostName();
-        }
-        catch (UnknownHostException e)
-        {
-            throw new IllegalStateException("Unable to determine hostname", e);
-        }
     }
 
     @Override
     public String getLogicalName()
     {
         return logicalName;
-    }
-
-    @Override
-    public String getHostName()
-    {
-        return hostName;
     }
 
     @Override
