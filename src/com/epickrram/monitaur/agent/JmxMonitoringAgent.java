@@ -47,7 +47,8 @@ public final class JmxMonitoringAgent implements JmxMonitoringRequestListener
 
     public void start(final ScheduledExecutorService scheduledExecutorService)
     {
-        scheduledExecutorService.scheduleAtFixedRate(new CollectorJob(), 0L, 1L, TimeUnit.SECONDS);
+        LOGGER.info("Scheduling poll job for 3 second interval");
+        scheduledExecutorService.scheduleAtFixedRate(new CollectorJob(), 0L, 3L, TimeUnit.SECONDS);
     }
 
     @Override
@@ -86,6 +87,7 @@ public final class JmxMonitoringAgent implements JmxMonitoringRequestListener
         @Override
         public void run()
         {
+            LOGGER.info("Polling collectors");
             for (JmxCollector collector : collectors)
             {
                 try
@@ -93,11 +95,12 @@ public final class JmxMonitoringAgent implements JmxMonitoringRequestListener
                     final MonitorData value =
                             new MonitorData(collector.getMonitorType(), collector.getLogicalName(),
                                     collector.getHostName(), collector.getValue(platformMBeanServer), Clock.getCurrentMillis());
+                    LOGGER.info("Retrieved data: " + value);
                     publisher.publish(value);
                 }
-                catch(Exception e)
+                catch(Throwable e)
                 {
-                    // ignore
+                    LOGGER.error("Failed to poll collector " + collector, e);
                 }
             }
         }

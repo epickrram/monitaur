@@ -105,7 +105,7 @@ public final class MulticastReceiver
                     final MonitorData monitorData = decoderStream.readObject();
                     handler.onMonitorData(monitorData);
                 }
-                catch(IOException e)
+                catch(Throwable e)
                 {
                     LOGGER.error("Failed to process incoming data", e);
                 }

@@ -16,9 +16,12 @@ Copyright 2011 Mark Price
 package com.epickrram.monitaur.agent;
 
 import com.epickrram.monitaur.common.domain.MonitorData;
+import com.epickrram.monitaur.common.logging.Logger;
 
 public final class CompositePublisher implements Publisher
 {
+    private static final Logger LOGGER = Logger.getLogger(CompositePublisher.class);
+
     private final Publisher[] publishers;
 
     public CompositePublisher(final Publisher... publishers)
@@ -31,7 +34,14 @@ public final class CompositePublisher implements Publisher
     {
         for (Publisher publisher : publishers)
         {
-            publisher.publish(data);
+            try
+            {
+                publisher.publish(data);
+            }
+            catch (Throwable e)
+            {
+                LOGGER.error("Failed to publish to publisher of type: " + publisher, e);
+            }
         }
     }
 }

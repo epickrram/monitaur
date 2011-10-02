@@ -6,6 +6,7 @@
     <property name="release.dir" value="build/release"/>
     <property name="majorVersion" value="0"/>
     <property name="minorVersion" value="1"/>
+    <property name="webappDeployPath" value="/opt/programs/resin-4.0.22/webapps"/>
 
     <path id="dist.class.path">
         <fileset dir="lib/dist">
@@ -27,15 +28,43 @@
     <target name="compile" depends="clean">
         <mkdir dir="${dist.dir}/classes"/>
     	<javac destdir="${dist.dir}/classes" srcdir="src">
-    		<classpath refid="dist.class.path"/>
+    		<classpath refid="build.class.path"/>
     	</javac>
     </target>
 
     <target name="jar" depends="compile">
-        <jar destfile="${dist.dir}/monitaur-${majorVersion}.${minorVersion}.jar" basedir="${dist.dir}/classes" manifest="manifest/MANIFEST.MF"/>
+        <jar destfile="${dist.dir}/monitaur-${majorVersion}.${minorVersion}.jar"
+             basedir="${dist.dir}/classes" manifest="manifest/MANIFEST.MF"/>
     </target>
 
-    <target name="dist" depends="jar">
+    <target name="war" depends="compile">
+        <mkdir dir="${dist.dir}/web"/>
+        <copy todir="${dist.dir}/web">
+            <fileset dir="web" includes="**/*"/>
+        </copy>
+        <mkdir dir="${dist.dir}/web/WEB-INF/classes"/>
+        <copy todir="${dist.dir}/web/WEB-INF/classes">
+            <fileset dir="${dist.dir}/classes">
+                <include name="com/epickrram/monitaur/common/**/*"/>
+                <include name="com/epickrram/monitaur/server/**/*"/>
+            </fileset>
+        </copy>
+
+        <mkdir dir="${dist.dir}/web/WEB-INF/lib"/>
+        <copy todir="${dist.dir}/web/WEB-INF/lib">
+            <fileset dir="lib/dist">
+                <include name="*.jar"/>
+            </fileset>
+        </copy>
+
+        <jar destfile="${dist.dir}/monitaur.war">
+            <fileset dir="${dist.dir}/web">
+                <include name="**/*"/>
+            </fileset>
+        </jar>
+    </target>
+
+    <target name="dist" depends="jar, war">
         <delete dir="${release.dir}"/>
         <mkdir dir="${release.dir}"/>
         <copy todir="${release.dir}">
@@ -55,6 +84,20 @@
     </target>
 
     <target name="all" depends="dist"/>
+
+    <target name="deploy" depends="war">
+        <copy todir="${webappDeployPath}" file="${dist.dir}/monitaur.war"/>
+    </target>
+
+    <target name="hotdeploy">
+        <copy todir="${webappDeployPath}/monitaur">
+            <fileset dir="web">
+                <include name="css/*"/>
+                <include name="html/*"/>
+                <include name="js/*"/>
+            </fileset>
+        </copy>
+    </target>
 	
 </project>
 	

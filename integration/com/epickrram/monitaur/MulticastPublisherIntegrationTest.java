@@ -90,9 +90,9 @@ public final class MulticastPublisherIntegrationTest
     public void before() throws Exception
     {
         executorService = Executors.newCachedThreadPool();
-     
-        final MonitorData.WireFormat wireFormat = new MonitorData.WireFormat();
-        codeBook.registerHandlers(MonitorData.class.getName(), wireFormat, wireFormat);
+
+        final MonitorData.Translator translator = new MonitorData.Translator();
+        codeBook.registerHandlers(MonitorData.class.getName(), translator, translator);
         data1 = new MonitorData(MonitorType.SCALAR, "logicalName1", "hostname", Integer.MAX_VALUE, System.currentTimeMillis());
         data2 = new MonitorData(MonitorType.SCALAR, "logicalName2", "hostname", "foobar", System.currentTimeMillis());
         inetAddress = InetAddress.getByName("239.0.0.1");
