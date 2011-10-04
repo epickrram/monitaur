@@ -18,22 +18,27 @@ package com.epickrram.monitaur.agent;
 import com.epickrram.freewheel.util.Logger;
 import com.epickrram.monitaur.agent.collector.JmxCollector;
 import com.epickrram.monitaur.agent.collector.NamedAttributeJmxCollector;
-import com.epickrram.monitaur.common.Server;
-import com.epickrram.monitaur.common.jmx.JmxAttributeDetails;
 import com.epickrram.monitaur.agent.jmx.JmxAttributeFinder;
+import com.epickrram.monitaur.common.Agents;
+import com.epickrram.monitaur.common.AvailableAttributes;
+import com.epickrram.monitaur.common.Server;
 import com.epickrram.monitaur.common.domain.MonitorData;
+import com.epickrram.monitaur.common.jmx.AttributeDetails;
+import com.epickrram.monitaur.common.jmx.JmxAttributeDetails;
 import com.epickrram.monitaur.common.util.Clock;
 
 import javax.management.MBeanServer;
 import java.lang.management.ManagementFactory;
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ConcurrentLinkedQueue;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
-public final class JmxMonitoringAgent implements JmxMonitoringRequestListener
+public final class JmxMonitoringAgent implements JmxMonitoringRequestListener, Agents
 {
     private static final Logger LOGGER = Logger.getLogger(JmxMonitoringAgent.class);
     private static final String AGENT_ID_CONFIG_PARAM = "monitaur.agentId";
@@ -88,6 +93,31 @@ public final class JmxMonitoringAgent implements JmxMonitoringRequestListener
         }
     }
 
+    @Override
+    public void publishAvailableAttributes()
+    {
+        final List<JmxAttributeDetails> availableAttributes = new ArrayList<JmxAttributeDetails>(new JmxAttributeFinder("", "").listAttributes());
+        server.reportAvailableAttributes(new AvailableAttributes(agentId, toAttributeDetails(availableAttributes)));
+    }
+
+    @Override
+    public void monitorNamedAttribute(final String agentId, final String logicalName, final String objectNameRegex, final String attributeNameRegex)
+    {
+        if(this.agentId.equals(agentId))
+        {
+            monitorNamedAttribute(logicalName, objectNameRegex, attributeNameRegex);
+        }
+    }
+
+    @Override
+    public void monitorNamedCompositeAttribute(final String agentId, final String logicalName, final String objectNameRegex, final String attributeNameRegex, final String compositeKey)
+    {
+        if(this.agentId.equals(agentId))
+        {
+            monitorNamedCompositeAttribute(logicalName, objectNameRegex, attributeNameRegex, compositeKey);
+        }
+    }
+
     private final class CollectorJob implements Runnable
     {
         @Override
@@ -127,5 +157,15 @@ public final class JmxMonitoringAgent implements JmxMonitoringRequestListener
         {
             throw new IllegalStateException("Cannot determine local hostname", e);
         }
+    }
+
+    private List<AttributeDetails> toAttributeDetails(final List<JmxAttributeDetails> availableAttributes)
+    {
+        final List<AttributeDetails> detailList = new ArrayList<AttributeDetails>(availableAttributes.size());
+        for (JmxAttributeDetails availableAttribute : availableAttributes)
+        {
+            detailList.add(new AttributeDetails(availableAttribute.getObjectName().toString(), availableAttribute.getAttributeInfo().getName()));
+        }
+        return detailList;
     }
 }

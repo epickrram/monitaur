@@ -16,13 +16,19 @@ Copyright 2011 Mark Price
 package com.epickrram.monitaur.agent;
 
 import com.epickrram.freewheel.io.ClassnameCodeBook;
+import com.epickrram.freewheel.messaging.MessagingService;
 import com.epickrram.freewheel.messaging.MessagingServiceImpl;
+import com.epickrram.freewheel.messaging.Receiver;
 import com.epickrram.freewheel.remoting.ClassNameTopicIdGenerator;
 import com.epickrram.freewheel.remoting.PublisherFactory;
+import com.epickrram.freewheel.remoting.SubscriberFactory;
 import com.epickrram.monitaur.agent.instrumentation.Transformer;
+import com.epickrram.monitaur.common.Agents;
+import com.epickrram.monitaur.common.AvailableAttributes;
 import com.epickrram.monitaur.common.Server;
 import com.epickrram.monitaur.common.domain.MonitorData;
 import com.epickrram.monitaur.common.instrumentation.TransferrableFinder;
+import com.epickrram.monitaur.common.jmx.AttributeDetails;
 
 import java.lang.instrument.Instrumentation;
 import java.net.InetAddress;
@@ -47,12 +53,22 @@ public final class MonitoringAgent
             {
                 try
                 {
-                    final Server server = createServer(codeBook, InetAddress.getByName("239.0.0.1"), 14001);
+                    // TODO this should be done by agent code
+                    codeBook.registerTranscoder(MonitorData.class.getName(), new MonitorData.Transcoder());
+                    codeBook.registerTranscoder(AvailableAttributes.class.getName(), new AvailableAttributes.Transcoder());
+                    codeBook.registerTranscoder(AttributeDetails.class.getName(), new AttributeDetails.Transcoder());
 
-                    final MonitorData.Transcoder transcoder = new MonitorData.Transcoder();
-                    codeBook.registerTranscoder(MonitorData.class.getName(), transcoder);
+                    final MessagingService messagingService = new MessagingServiceImpl(InetAddress.getByName("239.0.0.1").getHostAddress(), 14001, codeBook);
+                    final ClassNameTopicIdGenerator topicIdGenerator = new ClassNameTopicIdGenerator();
+                    final Server server = new PublisherFactory(messagingService, topicIdGenerator, codeBook).createPublisher(Server.class);
 
                     final JmxMonitoringAgent jmxMonitoringAgent = new JmxMonitoringAgent(server);
+
+                    final Receiver receiver = new SubscriberFactory().createReceiver(Agents.class, jmxMonitoringAgent);
+                    messagingService.registerReceiver(topicIdGenerator.getTopicId(Agents.class), receiver);
+
+                    messagingService.start();
+
                     jmxMonitoringAgent.start(Executors.newSingleThreadScheduledExecutor());
                     jmxMonitoringAgent.monitorNamedCompositeAttribute("HeapUsedBytes", ".*Memory$", "^HeapMemoryUsage$", "used");
                     jmxMonitoringAgent.monitorNamedCompositeAttribute("EdenUsedBytes", ".*PS Eden Space", "^Usage$", "used");
@@ -65,9 +81,4 @@ public final class MonitoringAgent
         }).start();
     }
 
-    private static Server createServer(final ClassnameCodeBook codeBook, final InetAddress address, final int port)
-    {
-        final MessagingServiceImpl messagingService = new MessagingServiceImpl(address.getHostAddress(), port, codeBook);
-        return new PublisherFactory(messagingService, new ClassNameTopicIdGenerator(), codeBook).createPublisher(Server.class);
-    }
 }

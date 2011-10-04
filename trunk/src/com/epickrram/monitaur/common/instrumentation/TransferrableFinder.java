@@ -28,12 +28,14 @@ public final class TransferrableFinder implements ClassFileTransformer
     @Override
     public byte[] transform(final ClassLoader loader, final String className, final Class<?> classBeingRedefined, final ProtectionDomain protectionDomain, final byte[] classfileBuffer) throws IllegalClassFormatException
     {
+        // TODO classBeingRedefined is null - create Transcoder class from CtClass
         final ClassPool classPool = ClassPool.getDefault();
         classPool.insertClassPath(new ByteArrayClassPath(className, classfileBuffer));
         CtClass cc = null;
         try
         {
             cc = classPool.get(className.replace('/', '.'));
+
             final Transferrable transferrable = (Transferrable) cc.getAnnotation(Transferrable.class);
             if (transferrable != null)
             {
@@ -43,6 +45,7 @@ public final class TransferrableFinder implements ClassFileTransformer
                 if (transcoder != null)
                 {
                     classnameCodeBook.registerTranscoder(className, transcoder);
+                    LOGGER.info("Added Transcoder to code book for class " + className);
                 }
                 else
                 {
@@ -55,6 +58,10 @@ public final class TransferrableFinder implements ClassFileTransformer
 
         }
         catch (ClassNotFoundException e)
+        {
+
+        }
+        catch(Throwable t)
         {
 
         }

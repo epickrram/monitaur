@@ -17,6 +17,7 @@ package com.epickrram.monitaur.server.servlet;
 
 import com.epickrram.freewheel.messaging.MessagingService;
 import com.epickrram.freewheel.messaging.MessagingServiceImpl;
+import com.epickrram.monitaur.common.Agents;
 import com.epickrram.monitaur.server.MonitorDataStore;
 import com.epickrram.monitaur.server.MulticastReceiver;
 
@@ -26,11 +27,15 @@ public final class Context
 
     private final MonitorDataStore monitorDataStore;
     private final MessagingService messageService;
+    private final Agents agents;
 
-    public Context(final MonitorDataStore monitorDataStore, final MessagingService messageService)
+    public Context(final MonitorDataStore monitorDataStore,
+                   final MessagingService messageService,
+                   final Agents agents)
     {
         this.monitorDataStore = monitorDataStore;
         this.messageService = messageService;
+        this.agents = agents;
     }
 
     public MonitorDataStore getMonitorDataStore()
@@ -41,5 +46,10 @@ public final class Context
     public MessagingService getMessageService()
     {
         return messageService;
+    }
+
+    public Agents getAgents()
+    {
+        return agents;
     }
 }

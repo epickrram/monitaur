@@ -7,6 +7,6 @@ import java.util.Collection;
 
 public interface Server
 {
-    void reportAvailableAttributes(final String agentId, final Collection<JmxAttributeDetails> availableAttributes);
+    void reportAvailableAttributes(final AvailableAttributes availableAttributes);
     void receiveMonitorData(final MonitorData monitorData);
 }
