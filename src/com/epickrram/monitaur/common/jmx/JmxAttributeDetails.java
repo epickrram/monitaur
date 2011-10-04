@@ -13,7 +13,7 @@ Copyright 2011 Mark Price
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package com.epickrram.monitaur.agent.jmx;
+package com.epickrram.monitaur.common.jmx;
 
 import javax.management.MBeanAttributeInfo;
 import javax.management.ObjectName;
@@ -23,7 +23,7 @@ public final class JmxAttributeDetails
     private final ObjectName objectName;
     private final MBeanAttributeInfo attributeInfo;
 
-    JmxAttributeDetails(final ObjectName objectName, final MBeanAttributeInfo attributeInfo)
+    public JmxAttributeDetails(final ObjectName objectName, final MBeanAttributeInfo attributeInfo)
     {
         this.objectName = objectName;
         this.attributeInfo = attributeInfo;

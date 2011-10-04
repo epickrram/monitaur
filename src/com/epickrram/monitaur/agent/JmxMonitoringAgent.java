@@ -15,12 +15,13 @@ Copyright 2011 Mark Price
  */
 package com.epickrram.monitaur.agent;
 
+import com.epickrram.freewheel.util.Logger;
 import com.epickrram.monitaur.agent.collector.JmxCollector;
 import com.epickrram.monitaur.agent.collector.NamedAttributeJmxCollector;
-import com.epickrram.monitaur.agent.jmx.JmxAttributeDetails;
+import com.epickrram.monitaur.common.Server;
+import com.epickrram.monitaur.common.jmx.JmxAttributeDetails;
 import com.epickrram.monitaur.agent.jmx.JmxAttributeFinder;
 import com.epickrram.monitaur.common.domain.MonitorData;
-import com.epickrram.monitaur.common.logging.Logger;
 import com.epickrram.monitaur.common.util.Clock;
 
 import javax.management.MBeanServer;
@@ -37,14 +38,14 @@ public final class JmxMonitoringAgent implements JmxMonitoringRequestListener
     private static final Logger LOGGER = Logger.getLogger(JmxMonitoringAgent.class);
     private static final String AGENT_ID_CONFIG_PARAM = "monitaur.agentId";
 
-    private final Publisher publisher;
+    private final Server server;
     private final MBeanServer platformMBeanServer;
     private final Queue<JmxCollector> collectors = new ConcurrentLinkedQueue<JmxCollector>();
     private final String agentId;
 
-    public JmxMonitoringAgent(final Publisher publisher)
+    public JmxMonitoringAgent(final Server server)
     {
-        this.publisher = publisher;
+        this.server = server;
         new JmxMonitoringManagerImpl(this).registerSelf();
         platformMBeanServer = ManagementFactory.getPlatformMBeanServer();
         agentId = getAgentId();
@@ -92,7 +93,6 @@ public final class JmxMonitoringAgent implements JmxMonitoringRequestListener
         @Override
         public void run()
         {
-            LOGGER.info("Polling collectors");
             for (JmxCollector collector : collectors)
             {
                 try
@@ -100,8 +100,7 @@ public final class JmxMonitoringAgent implements JmxMonitoringRequestListener
                     final MonitorData value =
                             new MonitorData(collector.getMonitorType(), collector.getLogicalName(),
                                     agentId, collector.getValue(platformMBeanServer), Clock.getCurrentMillis());
-                    LOGGER.info("Retrieved data: " + value);
-                    publisher.publish(value);
+                    server.receiveMonitorData(value);
                 }
                 catch(Throwable e)
                 {

@@ -15,13 +15,13 @@ Copyright 2011 Mark Price
  */
 package com.epickrram.monitaur.common.domain;
 
-import com.epickrram.monitaur.common.io.Decoder;
-import com.epickrram.monitaur.common.io.DecoderStream;
-import com.epickrram.monitaur.common.io.Encoder;
-import com.epickrram.monitaur.common.io.EncoderStream;
+import com.epickrram.freewheel.io.DecoderStream;
+import com.epickrram.freewheel.io.EncoderStream;
+import com.epickrram.monitaur.common.io.Transferrable;
 
 import java.io.IOException;
 
+@Transferrable
 public final class MonitorData
 {
     private final MonitorType monitorType;
@@ -109,7 +109,7 @@ public final class MonitorData
         return result;
     }
 
-    public static final class Translator implements Encoder<MonitorData>, Decoder<MonitorData>
+    public static final class Transcoder implements com.epickrram.freewheel.io.Transcoder<MonitorData>
     {
         @Override
         public void encode(final MonitorData encodable, final EncoderStream encoderStream) throws IOException

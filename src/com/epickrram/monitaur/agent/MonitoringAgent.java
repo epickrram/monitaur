@@ -15,26 +15,30 @@ Copyright 2011 Mark Price
  */
 package com.epickrram.monitaur.agent;
 
+import com.epickrram.freewheel.io.ClassnameCodeBook;
+import com.epickrram.freewheel.messaging.MessagingServiceImpl;
+import com.epickrram.freewheel.remoting.ClassNameTopicIdGenerator;
+import com.epickrram.freewheel.remoting.PublisherFactory;
 import com.epickrram.monitaur.agent.instrumentation.Transformer;
+import com.epickrram.monitaur.common.Server;
 import com.epickrram.monitaur.common.domain.MonitorData;
-import com.epickrram.monitaur.common.io.ClassnameCodeBook;
+import com.epickrram.monitaur.common.instrumentation.TransferrableFinder;
 
-import javax.swing.JFrame;
-import java.awt.BorderLayout;
-import java.awt.Container;
 import java.lang.instrument.Instrumentation;
 import java.net.InetAddress;
 import java.util.concurrent.Executors;
 
-public final class MonitoringAgent
+public final class MonitoringAgent 
 {
     public static void premain(final String agentArgs, final Instrumentation instrumentation)
     {
+        final ClassnameCodeBook classnameCodeBook = new ClassnameCodeBook();
+        instrumentation.addTransformer(new TransferrableFinder(classnameCodeBook));
         instrumentation.addTransformer(new Transformer());
-        startJmxMonitoring();
+        startJmxMonitoring(classnameCodeBook);
     }
 
-    static void startJmxMonitoring()
+    static void startJmxMonitoring(final ClassnameCodeBook codeBook)
     {
         new Thread(new Runnable()
         {
@@ -43,32 +47,15 @@ public final class MonitoringAgent
             {
                 try
                 {
-                    final Publisher publisher;
-                    if(Boolean.valueOf(System.getProperty("monitaur.ui")))
-                    {
-                        final UiPublisher uiPublisher = new UiPublisher();
-                        publisher = new CompositePublisher(new StdOutPublisher(), uiPublisher);
-                        final JFrame frame = new JFrame();
-                        final Container contentPane = frame.getContentPane();
-                        contentPane.setLayout(new BorderLayout());
-                        contentPane.add("Center", uiPublisher);
-                        frame.setSize(400, 600);
-                        frame.setVisible(true);
-                    }
-                    else
-                    {
-                        final ClassnameCodeBook codeBook = new ClassnameCodeBook();
-                        final MonitorData.Translator translator = new MonitorData.Translator();
-                        codeBook.registerHandlers(MonitorData.class.getName(), translator, translator);
-                        publisher = new CompositePublisher(
-                                new MulticastPublisher(codeBook, InetAddress.getByName("239.0.0.1"), 14001),
-                                new StdOutPublisher());
-                    }
+                    final Server server = createServer(codeBook, InetAddress.getByName("239.0.0.1"), 14001);
 
-                    final JmxMonitoringAgent jmxMonitoringAgent = new JmxMonitoringAgent(publisher);
+                    final MonitorData.Transcoder transcoder = new MonitorData.Transcoder();
+                    codeBook.registerTranscoder(MonitorData.class.getName(), transcoder);
+
+                    final JmxMonitoringAgent jmxMonitoringAgent = new JmxMonitoringAgent(server);
                     jmxMonitoringAgent.start(Executors.newSingleThreadScheduledExecutor());
-//                    jmxMonitoringAgent.monitorNamedCompositeAttribute("HeapUsedBytes", ".*Memory$", "HeapMemoryUsage", "used");
-//                    jmxMonitoringAgent.monitorNamedCompositeAttribute("EdenUsedBytes", ".*PS Eden Space", "^Usage$", "used");
+                    jmxMonitoringAgent.monitorNamedCompositeAttribute("HeapUsedBytes", ".*Memory$", "^HeapMemoryUsage$", "used");
+                    jmxMonitoringAgent.monitorNamedCompositeAttribute("EdenUsedBytes", ".*PS Eden Space", "^Usage$", "used");
                 }
                 catch (Exception e)
                 {
@@ -76,5 +63,11 @@ public final class MonitoringAgent
                 }
             }
         }).start();
+    }
+
+    private static Server createServer(final ClassnameCodeBook codeBook, final InetAddress address, final int port)
+    {
+        final MessagingServiceImpl messagingService = new MessagingServiceImpl(address.getHostAddress(), port, codeBook);
+        return new PublisherFactory(messagingService, new ClassNameTopicIdGenerator(), codeBook).createPublisher(Server.class);
     }
 }

@@ -15,6 +15,8 @@ Copyright 2011 Mark Price
  */
 package com.epickrram.monitaur.server.servlet;
 
+import com.epickrram.freewheel.messaging.MessagingService;
+import com.epickrram.freewheel.messaging.MessagingServiceImpl;
 import com.epickrram.monitaur.server.MonitorDataStore;
 import com.epickrram.monitaur.server.MulticastReceiver;
 
@@ -23,12 +25,12 @@ public final class Context
     public static final String REQUEST_ATTRIBUTE_KEY = Context.class.getName();
 
     private final MonitorDataStore monitorDataStore;
-    private final MulticastReceiver multicastReceiver;
+    private final MessagingService messageService;
 
-    public Context(final MonitorDataStore monitorDataStore, final MulticastReceiver multicastReceiver)
+    public Context(final MonitorDataStore monitorDataStore, final MessagingService messageService)
     {
         this.monitorDataStore = monitorDataStore;
-        this.multicastReceiver = multicastReceiver;
+        this.messageService = messageService;
     }
 
     public MonitorDataStore getMonitorDataStore()
@@ -36,8 +38,8 @@ public final class Context
         return monitorDataStore;
     }
 
-    public MulticastReceiver getMulticastReceiver()
+    public MessagingService getMessageService()
     {
-        return multicastReceiver;
+        return messageService;
     }
 }
