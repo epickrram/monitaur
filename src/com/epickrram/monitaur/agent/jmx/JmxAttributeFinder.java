@@ -25,6 +25,8 @@ import javax.management.MBeanServer;
 import javax.management.ObjectName;
 import javax.management.ReflectionException;
 import java.lang.management.ManagementFactory;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Set;
 import java.util.regex.Pattern;
 
@@ -41,6 +43,41 @@ public final class JmxAttributeFinder
         }
         this.mbeanNameRegex = mbeanNameRegex == null ? null : Pattern.compile(mbeanNameRegex);
         this.attributeRegex = attributeRegex == null ? null : Pattern.compile(attributeRegex);
+    }
+
+    public Collection<JmxAttributeDetails> listAttributes()
+    {
+        final Collection<JmxAttributeDetails> attributeList = new ArrayList<JmxAttributeDetails>();
+        final MBeanServer platformMBeanServer = ManagementFactory.getPlatformMBeanServer();
+        final Set<ObjectName> objectNames = platformMBeanServer.queryNames(null, null);
+        try
+        {
+            for (ObjectName objectName : objectNames)
+            {
+                final MBeanInfo mBeanInfo = platformMBeanServer.getMBeanInfo(objectName);
+                final MBeanAttributeInfo[] attributes = mBeanInfo.getAttributes();
+                for (MBeanAttributeInfo attribute : attributes)
+                {
+                    if(matches(objectName, attribute))
+                    {
+                        attributeList.add(new JmxAttributeDetails(objectName, attribute));
+                    }
+                }
+            }
+        }
+        catch (InstanceNotFoundException e)
+        {
+             throw new RuntimeException("Unable to query MBeans", e);
+        }
+        catch (IntrospectionException e)
+        {
+            throw new RuntimeException("Unable to query MBeans", e);
+        }
+        catch (ReflectionException e)
+        {
+            throw new RuntimeException("Unable to query MBeans", e);
+        }
+        return attributeList;
     }
 
     public JmxAttributeDetails findAttribute()
