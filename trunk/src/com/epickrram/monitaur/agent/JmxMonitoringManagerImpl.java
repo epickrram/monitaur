@@ -15,7 +15,8 @@ Copyright 2011 Mark Price
  */
 package com.epickrram.monitaur.agent;
 
-import com.epickrram.monitaur.common.logging.Logger;
+
+import com.epickrram.freewheel.util.Logger;
 
 import javax.management.InstanceAlreadyExistsException;
 import javax.management.MBeanRegistrationException;

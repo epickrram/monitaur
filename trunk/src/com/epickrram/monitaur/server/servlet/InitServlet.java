@@ -15,10 +15,15 @@ Copyright 2011 Mark Price
  */
 package com.epickrram.monitaur.server.servlet;
 
+import com.epickrram.freewheel.io.ClassnameCodeBook;
+import com.epickrram.freewheel.messaging.MessagingServiceImpl;
+import com.epickrram.freewheel.messaging.Receiver;
+import com.epickrram.freewheel.remoting.ClassNameTopicIdGenerator;
+import com.epickrram.freewheel.remoting.SubscriberFactory;
+import com.epickrram.monitaur.common.Server;
 import com.epickrram.monitaur.common.domain.MonitorData;
-import com.epickrram.monitaur.common.io.ClassnameCodeBook;
 import com.epickrram.monitaur.server.MonitorDataStore;
-import com.epickrram.monitaur.server.MulticastReceiver;
+import com.epickrram.monitaur.server.ServerImpl;
 
 import javax.servlet.GenericServlet;
 import javax.servlet.ServletConfig;
@@ -28,7 +33,6 @@ import javax.servlet.ServletResponse;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.net.UnknownHostException;
-import java.util.concurrent.Executors;
 
 public final class InitServlet extends GenericServlet
 {
@@ -43,22 +47,25 @@ public final class InitServlet extends GenericServlet
         {
             
             final ClassnameCodeBook codeBook = new ClassnameCodeBook();
-            final MonitorData.Translator translator = new MonitorData.Translator();
-            codeBook.registerHandlers(MonitorData.class.getName(), translator, translator);
+            final MonitorData.Transcoder transcoder = new MonitorData.Transcoder();
+            codeBook.registerTranscoder(MonitorData.class.getName(), transcoder);
 
             final MonitorDataStore monitorDataStore = new MonitorDataStore(1000);
-            final MulticastReceiver multicastReceiver = new MulticastReceiver(codeBook,
-                    InetAddress.getByName("239.0.0.1"), 14001,
-                    Executors.newCachedThreadPool(), monitorDataStore);
-            multicastReceiver.start();
-            context = new Context(monitorDataStore, multicastReceiver);
+            final ServerImpl server = new ServerImpl(monitorDataStore);
+            final MessagingServiceImpl messagingService =
+                    new MessagingServiceImpl(InetAddress.getByName("239.0.0.1").getHostAddress(), 14001, codeBook);
+            final Receiver receiver = new SubscriberFactory().createReceiver(Server.class, server);
+            // TODO should be property of Receiver
+            final int topicId = new ClassNameTopicIdGenerator().getTopicId(Server.class);
+            messagingService.registerReceiver(topicId, receiver);
+
+            messagingService.start();
+
+
+            context = new Context(monitorDataStore, messagingService);
             ContextFilter.setContext(context);
         }
         catch (UnknownHostException e)
-        {
-            throw new ServletException("Unable to initialise data receiver", e);
-        }
-        catch (InterruptedException e)
         {
             throw new ServletException("Unable to initialise data receiver", e);
         }
@@ -69,7 +76,7 @@ public final class InitServlet extends GenericServlet
     {
         if(context != null)
         {
-            context.getMulticastReceiver().stop();
+            context.getMessageService().shutdown();
         }
     }
 

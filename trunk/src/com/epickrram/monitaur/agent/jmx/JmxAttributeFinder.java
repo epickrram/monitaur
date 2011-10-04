@@ -15,6 +15,8 @@ Copyright 2011 Mark Price
  */
 package com.epickrram.monitaur.agent.jmx;
 
+import com.epickrram.monitaur.common.jmx.JmxAttributeDetails;
+
 import javax.management.InstanceNotFoundException;
 import javax.management.IntrospectionException;
 import javax.management.MBeanAttributeInfo;

@@ -15,7 +15,7 @@ Copyright 2011 Mark Price
  */
 package com.epickrram.monitaur.agent.collector;
 
-import com.epickrram.monitaur.agent.jmx.JmxAttributeDetails;
+import com.epickrram.monitaur.common.jmx.JmxAttributeDetails;
 import com.epickrram.monitaur.agent.jmx.JmxAttributeFinder;
 import org.junit.Test;
 

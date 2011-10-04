@@ -15,8 +15,8 @@ Copyright 2011 Mark Price
  */
 package com.epickrram.monitaur.agent.collector;
 
+import com.epickrram.freewheel.util.Logger;
 import com.epickrram.monitaur.common.domain.MonitorType;
-import com.epickrram.monitaur.common.logging.Logger;
 
 import javax.management.AttributeNotFoundException;
 import javax.management.InstanceNotFoundException;

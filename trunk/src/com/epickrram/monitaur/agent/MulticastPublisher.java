@@ -15,11 +15,11 @@ Copyright 2011 Mark Price
  */
 package com.epickrram.monitaur.agent;
 
+import com.epickrram.freewheel.io.CodeBook;
+import com.epickrram.freewheel.io.EncoderStream;
+import com.epickrram.freewheel.io.PackerEncoderStream;
+import com.epickrram.freewheel.util.Logger;
 import com.epickrram.monitaur.common.domain.MonitorData;
-import com.epickrram.monitaur.common.io.CodeBook;
-import com.epickrram.monitaur.common.io.EncoderStream;
-import com.epickrram.monitaur.common.io.PackerEncoderStream;
-import com.epickrram.monitaur.common.logging.Logger;
 import org.msgpack.packer.MessagePackPacker;
 import org.msgpack.packer.Packer;
 

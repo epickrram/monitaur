@@ -15,8 +15,8 @@ Copyright 2011 Mark Price
  */
 package com.epickrram.monitaur.agent;
 
+import com.epickrram.freewheel.util.Logger;
 import com.epickrram.monitaur.common.domain.MonitorData;
-import com.epickrram.monitaur.common.logging.Logger;
 
 public final class CompositePublisher implements Publisher
 {

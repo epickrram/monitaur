@@ -15,10 +15,10 @@ Copyright 2011 Mark Price
  */
 package com.epickrram.monitaur;
 
+import com.epickrram.freewheel.io.ClassnameCodeBook;
 import com.epickrram.monitaur.agent.MulticastPublisher;
 import com.epickrram.monitaur.common.domain.MonitorData;
 import com.epickrram.monitaur.common.domain.MonitorType;
-import com.epickrram.monitaur.common.io.ClassnameCodeBook;
 import com.epickrram.monitaur.server.MonitorDataHandler;
 import com.epickrram.monitaur.server.MulticastReceiver;
 import org.junit.After;
@@ -91,8 +91,8 @@ public final class MulticastPublisherIntegrationTest
     {
         executorService = Executors.newCachedThreadPool();
 
-        final MonitorData.Translator translator = new MonitorData.Translator();
-        codeBook.registerHandlers(MonitorData.class.getName(), translator, translator);
+        final MonitorData.Transcoder transcoder = new MonitorData.Transcoder();
+        codeBook.registerTranscoder(MonitorData.class.getName(), transcoder);
         data1 = new MonitorData(MonitorType.SCALAR, "logicalName1", "hostname", Integer.MAX_VALUE, System.currentTimeMillis());
         data2 = new MonitorData(MonitorType.SCALAR, "logicalName2", "hostname", "foobar", System.currentTimeMillis());
         inetAddress = InetAddress.getByName("239.0.0.1");

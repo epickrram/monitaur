@@ -15,7 +15,8 @@ Copyright 2011 Mark Price
  */
 package com.epickrram.monitaur.common.io;
 
-import com.epickrram.monitaur.common.logging.Logger;
+
+import com.epickrram.freewheel.util.Logger;
 
 import java.io.IOException;
 import java.net.NetworkInterface;
