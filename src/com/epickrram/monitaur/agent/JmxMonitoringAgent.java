@@ -33,8 +33,8 @@ import java.net.Inet4Address;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Queue;
-import java.util.concurrent.ConcurrentLinkedQueue;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
 
@@ -45,7 +45,7 @@ public final class JmxMonitoringAgent implements JmxMonitoringRequestListener, A
 
     private final Server server;
     private final MBeanServer platformMBeanServer;
-    private final Queue<JmxCollector> collectors = new ConcurrentLinkedQueue<JmxCollector>();
+    private final Map<String, JmxCollector> collectors = new ConcurrentHashMap<String, JmxCollector>();
     private final String agentId;
 
     public JmxMonitoringAgent(final Server server)
@@ -73,7 +73,7 @@ public final class JmxMonitoringAgent implements JmxMonitoringRequestListener, A
                     new NamedAttributeJmxCollector(logicalName, attributeDetails.getObjectName(), attributeDetails.getAttributeInfo());
 
             LOGGER.info("Adding collector: " + collector);
-            collectors.add(collector);
+            collectors.put(logicalName, collector);
         }
         else
         {
@@ -88,7 +88,7 @@ public final class JmxMonitoringAgent implements JmxMonitoringRequestListener, A
         final JmxAttributeDetails attributeDetails = new JmxAttributeFinder(objectNameRegex, attributeNameRegex).findAttribute();
         if(attributeDetails != null)
         {
-            collectors.add(new NamedAttributeJmxCollector(logicalName, attributeDetails.getObjectName(),
+            collectors.put(logicalName, new NamedAttributeJmxCollector(logicalName, attributeDetails.getObjectName(),
                     attributeDetails.getAttributeInfo(), compositeKey));
         }
     }
@@ -123,7 +123,7 @@ public final class JmxMonitoringAgent implements JmxMonitoringRequestListener, A
         @Override
         public void run()
         {
-            for (JmxCollector collector : collectors)
+            for (JmxCollector collector : collectors.values())
             {
                 try
                 {

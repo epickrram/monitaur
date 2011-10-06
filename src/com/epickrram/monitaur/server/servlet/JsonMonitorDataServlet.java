@@ -16,11 +16,11 @@ Copyright 2011 Mark Price
 package com.epickrram.monitaur.server.servlet;
 
 import com.epickrram.monitaur.common.domain.MonitorData;
+import com.epickrram.monitaur.server.Context;
 import com.epickrram.monitaur.server.MonitorDataStore;
 import com.google.gson.Gson;
 
 import javax.servlet.ServletException;
-import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 import java.io.IOException;
@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-public final class JsonMonitorDataServlet extends HttpServlet
+public final class JsonMonitorDataServlet extends MonitaurServlet
 {
     @Override
     protected void service(final HttpServletRequest request, final HttpServletResponse response) throws ServletException, IOException
@@ -50,10 +50,5 @@ public final class JsonMonitorDataServlet extends HttpServlet
         response.setContentLength(json.length());
         response.getWriter().append(json);
         response.flushBuffer();
-    }
-
-    private Context getContext(final HttpServletRequest request)
-    {
-        return (Context) request.getAttribute(Context.REQUEST_ATTRIBUTE_KEY);
     }
 }

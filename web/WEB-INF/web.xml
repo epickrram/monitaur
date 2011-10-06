@@ -20,6 +20,16 @@
         <url-pattern>/data*</url-pattern>
     </servlet-mapping>
 
+    <servlet>
+        <servlet-name>ConfigServlet</servlet-name>
+        <servlet-class>com.epickrram.monitaur.server.servlet.ConfigServlet</servlet-class>
+    </servlet>
+
+    <servlet-mapping>
+        <servlet-name>ConfigServlet</servlet-name>
+        <url-pattern>/config*</url-pattern>
+    </servlet-mapping>
+
     <filter>
         <filter-name>ContextFilter</filter-name>
         <filter-class>com.epickrram.monitaur.server.servlet.ContextFilter</filter-class>

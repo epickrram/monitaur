@@ -15,6 +15,8 @@ Copyright 2011 Mark Price
  */
 package com.epickrram.monitaur.server.servlet;
 
+import com.epickrram.monitaur.server.Context;
+
 import javax.servlet.Filter;
 import javax.servlet.FilterChain;
 import javax.servlet.FilterConfig;
