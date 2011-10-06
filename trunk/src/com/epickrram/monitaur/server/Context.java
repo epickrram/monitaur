@@ -13,13 +13,10 @@ Copyright 2011 Mark Price
    See the License for the specific language governing permissions and
    limitations under the License.
  */
-package com.epickrram.monitaur.server.servlet;
+package com.epickrram.monitaur.server;
 
 import com.epickrram.freewheel.messaging.MessagingService;
-import com.epickrram.freewheel.messaging.MessagingServiceImpl;
 import com.epickrram.monitaur.common.Agents;
-import com.epickrram.monitaur.server.MonitorDataStore;
-import com.epickrram.monitaur.server.MulticastReceiver;
 
 public final class Context
 {
@@ -28,14 +25,17 @@ public final class Context
     private final MonitorDataStore monitorDataStore;
     private final MessagingService messageService;
     private final Agents agents;
+    private final ServerConfig serverConfig;
 
     public Context(final MonitorDataStore monitorDataStore,
                    final MessagingService messageService,
-                   final Agents agents)
+                   final Agents agents,
+                   final ServerConfig serverConfig)
     {
         this.monitorDataStore = monitorDataStore;
         this.messageService = messageService;
         this.agents = agents;
+        this.serverConfig = serverConfig;
     }
 
     public MonitorDataStore getMonitorDataStore()
@@ -51,5 +51,10 @@ public final class Context
     public Agents getAgents()
     {
         return agents;
+    }
+
+    public ServerConfig getServerConfig()
+    {
+        return serverConfig;
     }
 }

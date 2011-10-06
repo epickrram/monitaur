@@ -2,7 +2,6 @@ package com.epickrram.monitaur.common.jmx;
 
 import com.epickrram.freewheel.io.DecoderStream;
 import com.epickrram.freewheel.io.EncoderStream;
-import com.epickrram.freewheel.io.Transcoder;
 import com.epickrram.monitaur.common.io.Transferrable;
 
 import java.io.IOException;
@@ -36,6 +35,29 @@ public final class AttributeDetails
                 "objectName='" + objectName + '\'' +
                 ", attributeName='" + attributeName + '\'' +
                 '}';
+    }
+
+    @Override
+    public boolean equals(final Object o)
+    {
+        if (this == o) return true;
+        if (o == null || getClass() != o.getClass()) return false;
+
+        final AttributeDetails that = (AttributeDetails) o;
+
+        if (attributeName != null ? !attributeName.equals(that.attributeName) : that.attributeName != null)
+            return false;
+        if (objectName != null ? !objectName.equals(that.objectName) : that.objectName != null) return false;
+
+        return true;
+    }
+
+    @Override
+    public int hashCode()
+    {
+        int result = objectName != null ? objectName.hashCode() : 0;
+        result = 31 * result + (attributeName != null ? attributeName.hashCode() : 0);
+        return result;
     }
 
     public static final class Transcoder implements com.epickrram.freewheel.io.Transcoder<AttributeDetails>

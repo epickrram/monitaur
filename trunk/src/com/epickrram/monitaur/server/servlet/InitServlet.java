@@ -26,7 +26,9 @@ import com.epickrram.monitaur.common.AvailableAttributes;
 import com.epickrram.monitaur.common.Server;
 import com.epickrram.monitaur.common.domain.MonitorData;
 import com.epickrram.monitaur.common.jmx.AttributeDetails;
+import com.epickrram.monitaur.server.Context;
 import com.epickrram.monitaur.server.MonitorDataStore;
+import com.epickrram.monitaur.server.ServerConfig;
 import com.epickrram.monitaur.server.ServerImpl;
 
 import javax.servlet.GenericServlet;
@@ -58,7 +60,10 @@ public final class InitServlet extends GenericServlet
             codeBook.registerTranscoder(AttributeDetails.class.getName(), new AttributeDetails.Transcoder());
 
             final MonitorDataStore monitorDataStore = new MonitorDataStore(1000);
-            final ServerImpl server = new ServerImpl(monitorDataStore);
+
+            // TODO why does initialising ServerImpl later cause ClassPool exception in Javassist?
+            final ServerConfig serverConfig = new ServerConfig();
+            final ServerImpl server = new ServerImpl(monitorDataStore, serverConfig);
             final MessagingServiceImpl messagingService =
                     new MessagingServiceImpl(InetAddress.getByName("239.0.0.1").getHostAddress(), 14001, codeBook);
             final Receiver receiver = new SubscriberFactory().createReceiver(Server.class, server);
@@ -72,8 +77,9 @@ public final class InitServlet extends GenericServlet
             final PublisherFactory publisherFactory = new PublisherFactory(messagingService, topicIdGenerator, codeBook);
             final Agents agents = publisherFactory.createPublisher(Agents.class);
 
+            serverConfig.setAgents(agents);
 
-            context = new Context(monitorDataStore, messagingService, agents);
+            context = new Context(monitorDataStore, messagingService, agents, serverConfig);
 
             startAgentAttributePollTask(context);
 
