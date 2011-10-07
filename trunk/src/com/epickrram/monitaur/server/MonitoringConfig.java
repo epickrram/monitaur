@@ -1,31 +1,25 @@
 package com.epickrram.monitaur.server;
 
+import com.epickrram.monitaur.common.jmx.AttributeDetails;
+
 import java.util.Set;
 
 public final class MonitoringConfig implements Comparable<MonitoringConfig>
 {
-    private final String objectName;
-    private final String attributeName;
+    private final AttributeDetails attributeDetails;
     private final Set<AgentState> agentStates;
     private final boolean allHosts;
 
-    public MonitoringConfig(final String objectName, final String attributeName,
-                            final Set<AgentState> agentStates, final boolean allHosts)
+    public MonitoringConfig(final AttributeDetails attributeDetails, final Set<AgentState> agentStates, final boolean allHosts)
     {
-        this.objectName = objectName;
-        this.attributeName = attributeName;
+        this.attributeDetails = attributeDetails;
         this.agentStates = agentStates;
         this.allHosts = allHosts;
     }
 
-    public String getObjectName()
+    public AttributeDetails getAttributeDetails()
     {
-        return objectName;
-    }
-
-    public String getAttributeName()
-    {
-        return attributeName;
+        return attributeDetails;
     }
 
     public Set<AgentState> getAgentStates()
@@ -41,10 +35,10 @@ public final class MonitoringConfig implements Comparable<MonitoringConfig>
     @Override
     public int compareTo(final MonitoringConfig other)
     {
-        int comparison = objectName.compareTo(other.objectName);
+        int comparison = attributeDetails.getObjectName().compareTo(other.attributeDetails.getObjectName());
         if(comparison == 0)
         {
-            comparison = attributeName.compareTo(other.attributeName);
+            comparison = attributeDetails.getAttributeName().compareTo(other.getAttributeDetails().getAttributeName());
         }
 
         return comparison;

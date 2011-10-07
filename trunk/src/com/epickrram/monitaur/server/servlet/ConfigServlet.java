@@ -39,8 +39,7 @@ public final class ConfigServlet extends MonitaurServlet
                     if(agentState.isMonitored())
                     {
                         LOGGER.info("Agent [" + agentState.getAgentId() +
-                                "] is monitoring: " + monitoringConfig.getObjectName() + "." +
-                                monitoringConfig.getAttributeName());
+                                "] is monitoring: " + monitoringConfig.getAttributeDetails());
                     }
                 }
             }
@@ -65,8 +64,8 @@ public final class ConfigServlet extends MonitaurServlet
         {
             final AttributeDetails attributeDetails = entry.getKey();
             final MonitoringConfig monitoringConfig =
-                    new MonitoringConfig(attributeDetails.getObjectName(), attributeDetails.getAttributeName(),
-                            entry.getValue(), false);
+                    new MonitoringConfig(
+                            attributeDetails, entry.getValue(), false);
             monitoringConfigList.add(monitoringConfig);
         }
 

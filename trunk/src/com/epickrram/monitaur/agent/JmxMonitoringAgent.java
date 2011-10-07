@@ -27,13 +27,16 @@ import com.epickrram.monitaur.common.jmx.AttributeDetails;
 import com.epickrram.monitaur.common.jmx.JmxAttributeDetails;
 import com.epickrram.monitaur.common.util.Clock;
 
+import javax.management.MBeanAttributeInfo;
 import javax.management.MBeanServer;
+import javax.management.openmbean.CompositeType;
 import java.lang.management.ManagementFactory;
 import java.net.Inet4Address;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -164,7 +167,23 @@ public final class JmxMonitoringAgent implements JmxMonitoringRequestListener, A
         final List<AttributeDetails> detailList = new ArrayList<AttributeDetails>(availableAttributes.size());
         for (JmxAttributeDetails availableAttribute : availableAttributes)
         {
-            detailList.add(new AttributeDetails(availableAttribute.getObjectName().toString(), availableAttribute.getAttributeInfo().getName()));
+            final MBeanAttributeInfo attributeInfo = availableAttribute.getAttributeInfo();
+            if(attributeInfo.getType().equals("javax.management.openmbean.CompositeData"))
+            {
+                final Set<String> compositeNames = ((CompositeType) attributeInfo.
+                        getDescriptor().getFieldValues("openType")[0]).keySet();
+                for (String compositeName : compositeNames)
+                {
+                    detailList.add(new AttributeDetails(availableAttribute.getObjectName().toString(),
+                            attributeInfo.getName(), compositeName));
+                }
+                
+            }
+            else
+            {
+                detailList.add(new AttributeDetails(availableAttribute.getObjectName().toString(),
+                        attributeInfo.getName()));
+            }
         }
         return detailList;
     }
