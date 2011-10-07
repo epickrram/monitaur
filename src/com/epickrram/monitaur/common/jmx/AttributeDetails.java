@@ -11,11 +11,20 @@ public final class AttributeDetails
 {
     private final String objectName;
     private final String attributeName;
+    private final String compositeKey;
+
+    public AttributeDetails(final String objectName, final String attributeName, final String compositeKey)
+    {
+        this.objectName = objectName;
+        this.attributeName = attributeName;
+        this.compositeKey = compositeKey;
+    }
 
     public AttributeDetails(final String objectName, final String attributeName)
     {
         this.objectName = objectName;
         this.attributeName = attributeName;
+        compositeKey = null;
     }
 
     public String getObjectName()
@@ -28,12 +37,28 @@ public final class AttributeDetails
         return attributeName;
     }
 
+    public String getCompositeKey()
+    {
+        return compositeKey;
+    }
+
+    public boolean isCompositeData()
+    {
+        return compositeKey != null;
+    }
+
+    public String getDefaultLogicalName()
+    {
+        return isCompositeData() ? attributeName + "_" + compositeKey : attributeName;
+    }
+
     @Override
     public String toString()
     {
         return "AttributeDetails{" +
                 "objectName='" + objectName + '\'' +
                 ", attributeName='" + attributeName + '\'' +
+                ", compositeKey='" + compositeKey + '\'' +
                 '}';
     }
 
@@ -43,11 +68,13 @@ public final class AttributeDetails
         if (this == o) return true;
         if (o == null || getClass() != o.getClass()) return false;
 
-        final AttributeDetails that = (AttributeDetails) o;
+        final AttributeDetails details = (AttributeDetails) o;
 
-        if (attributeName != null ? !attributeName.equals(that.attributeName) : that.attributeName != null)
+        if (attributeName != null ? !attributeName.equals(details.attributeName) : details.attributeName != null)
             return false;
-        if (objectName != null ? !objectName.equals(that.objectName) : that.objectName != null) return false;
+        if (compositeKey != null ? !compositeKey.equals(details.compositeKey) : details.compositeKey != null)
+            return false;
+        if (objectName != null ? !objectName.equals(details.objectName) : details.objectName != null) return false;
 
         return true;
     }
@@ -57,6 +84,7 @@ public final class AttributeDetails
     {
         int result = objectName != null ? objectName.hashCode() : 0;
         result = 31 * result + (attributeName != null ? attributeName.hashCode() : 0);
+        result = 31 * result + (compositeKey != null ? compositeKey.hashCode() : 0);
         return result;
     }
 
@@ -67,6 +95,7 @@ public final class AttributeDetails
         {
             encoderStream.writeString(encodable.objectName);
             encoderStream.writeString(encodable.attributeName);
+            encoderStream.writeString(encodable.compositeKey);
         }
 
         @Override
@@ -74,8 +103,9 @@ public final class AttributeDetails
         {
             final String objectName = decoderStream.readString();
             final String attributeName = decoderStream.readString();
+            final String compositeKeyName = decoderStream.readString();
 
-            return new AttributeDetails(objectName, attributeName);
+            return new AttributeDetails(objectName, attributeName, compositeKeyName);
         }
     }
 
