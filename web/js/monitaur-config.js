@@ -100,15 +100,15 @@ function display(filterText)
                 {
                     return function()
                     {
-                        if($(this).attr("checked") == "true")
+                        if(localAgentState.monitored === false)
                         {
-                            localAgentState.monitored = false;
-                            $(this).removeAttr("checked")
+                            localAgentState.monitored = true;
+                            $(this).attr("checked", "checked");
                         }
                         else
                         {
-                            localAgentState.monitored = true;
-                            $(this).attr("checked", "true")
+                            localAgentState.monitored = false;
+                            $(this).removeAttr("checked");
                         }
                     };
 

@@ -18,11 +18,7 @@ public final class ServerConfig
 
     private volatile Agents agents;
 
-    public ServerConfig()
-    {
-    }
-
-    public void setAgents(final Agents agents)
+    public ServerConfig(final Agents agents)
     {
         this.agents = agents;
     }
@@ -58,6 +54,7 @@ public final class ServerConfig
         {
             final AttributeDetails details = monitoringConfig.getAttributeDetails();
             final Set<AgentState> agentStates = agentIdListByAttribute.get(details);
+            // TODO remove config if previously monitored
             agentStates.clear();
             agentStates.addAll(monitoringConfig.getAgentStates());
             for (AgentState agentState : monitoringConfig.getAgentStates())

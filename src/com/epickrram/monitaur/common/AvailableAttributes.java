@@ -31,7 +31,7 @@ public final class AvailableAttributes
         return attributeDetails;
     }
 
-    public static final class Transcoder implements com.epickrram.freewheel.io.Transcoder<AvailableAttributes>
+    public static final class Transcoder implements com.epickrram.freewheel.protocol.Transcoder<AvailableAttributes>
     {
         @Override
         public void encode(final AvailableAttributes encodable, final EncoderStream encoderStream) throws IOException
