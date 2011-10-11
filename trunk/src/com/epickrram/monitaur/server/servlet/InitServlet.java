@@ -15,14 +15,11 @@ Copyright 2011 Mark Price
  */
 package com.epickrram.monitaur.server.servlet;
 
-import com.epickrram.freewheel.io.ClassnameCodeBook;
-import com.epickrram.freewheel.messaging.MessagingServiceImpl;
-import com.epickrram.freewheel.messaging.Receiver;
-import com.epickrram.freewheel.remoting.ClassNameTopicIdGenerator;
-import com.epickrram.freewheel.remoting.PublisherFactory;
-import com.epickrram.freewheel.remoting.SubscriberFactory;
+import com.epickrram.freewheel.protocol.ClassnameCodeBook;
 import com.epickrram.monitaur.common.Agents;
 import com.epickrram.monitaur.common.AvailableAttributes;
+import com.epickrram.monitaur.common.FreewheelMessagingHelperFactory;
+import com.epickrram.monitaur.common.MessagingHelper;
 import com.epickrram.monitaur.common.Server;
 import com.epickrram.monitaur.common.domain.MonitorData;
 import com.epickrram.monitaur.common.jmx.AttributeDetails;
@@ -59,27 +56,21 @@ public final class InitServlet extends GenericServlet
             codeBook.registerTranscoder(AvailableAttributes.class.getName(), new AvailableAttributes.Transcoder());
             codeBook.registerTranscoder(AttributeDetails.class.getName(), new AttributeDetails.Transcoder());
 
+            final MessagingHelper messagingHelper = new FreewheelMessagingHelperFactory(InetAddress.getByName("239.0.0.1"),
+                    14001, codeBook).createMessagingHelper();
+
             final MonitorDataStore monitorDataStore = new MonitorDataStore(1000);
 
-            // TODO why does initialising ServerImpl later cause ClassPool exception in Javassist?
-            final ServerConfig serverConfig = new ServerConfig();
+            final Agents agents = messagingHelper.createPublisher(Agents.class);
+
+            final ServerConfig serverConfig = new ServerConfig(agents);
             final ServerImpl server = new ServerImpl(monitorDataStore, serverConfig);
-            final MessagingServiceImpl messagingService =
-                    new MessagingServiceImpl(InetAddress.getByName("239.0.0.1").getHostAddress(), 14001, codeBook);
-            final Receiver receiver = new SubscriberFactory().createReceiver(Server.class, server);
-            // TODO should be property of Receiver
-            final ClassNameTopicIdGenerator topicIdGenerator = new ClassNameTopicIdGenerator();
-            final int topicId = topicIdGenerator.getTopicId(Server.class);
-            messagingService.registerReceiver(topicId, receiver);
 
-            messagingService.start();
+            messagingHelper.registerSubscriber(Server.class, server);
 
-            final PublisherFactory publisherFactory = new PublisherFactory(messagingService, topicIdGenerator, codeBook);
-            final Agents agents = publisherFactory.createPublisher(Agents.class);
+            messagingHelper.start();
 
-            serverConfig.setAgents(agents);
-
-            context = new Context(monitorDataStore, messagingService, agents, serverConfig);
+            context = new Context(monitorDataStore, messagingHelper, agents, serverConfig);
 
             startAgentAttributePollTask(context);
 
@@ -108,7 +99,7 @@ public final class InitServlet extends GenericServlet
     {
         if(context != null)
         {
-            context.getMessageService().shutdown();
+            context.getMessagingHelper().stop();
         }
     }
 

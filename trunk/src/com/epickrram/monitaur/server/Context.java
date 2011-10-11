@@ -15,25 +15,25 @@ Copyright 2011 Mark Price
  */
 package com.epickrram.monitaur.server;
 
-import com.epickrram.freewheel.messaging.MessagingService;
 import com.epickrram.monitaur.common.Agents;
+import com.epickrram.monitaur.common.MessagingHelper;
 
 public final class Context
 {
     public static final String REQUEST_ATTRIBUTE_KEY = Context.class.getName();
 
     private final MonitorDataStore monitorDataStore;
-    private final MessagingService messageService;
+    private final MessagingHelper messagingHelper;
     private final Agents agents;
     private final ServerConfig serverConfig;
 
     public Context(final MonitorDataStore monitorDataStore,
-                   final MessagingService messageService,
+                   final MessagingHelper messagingHelper,
                    final Agents agents,
                    final ServerConfig serverConfig)
     {
         this.monitorDataStore = monitorDataStore;
-        this.messageService = messageService;
+        this.messagingHelper = messagingHelper;
         this.agents = agents;
         this.serverConfig = serverConfig;
     }
@@ -43,9 +43,9 @@ public final class Context
         return monitorDataStore;
     }
 
-    public MessagingService getMessageService()
+    public MessagingHelper getMessagingHelper()
     {
-        return messageService;
+        return messagingHelper;
     }
 
     public Agents getAgents()

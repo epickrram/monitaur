@@ -1,7 +1,7 @@
 package com.epickrram.monitaur.common.instrumentation;
 
-import com.epickrram.freewheel.io.ClassnameCodeBook;
-import com.epickrram.freewheel.io.Transcoder;
+import com.epickrram.freewheel.protocol.ClassnameCodeBook;
+import com.epickrram.freewheel.protocol.Transcoder;
 import com.epickrram.freewheel.util.Logger;
 import com.epickrram.monitaur.common.io.Transferrable;
 import javassist.ByteArrayClassPath;
@@ -9,7 +9,6 @@ import javassist.ClassPool;
 import javassist.CtClass;
 import javassist.NotFoundException;
 
-import java.lang.annotation.Annotation;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;

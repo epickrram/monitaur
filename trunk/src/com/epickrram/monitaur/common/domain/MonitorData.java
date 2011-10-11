@@ -109,7 +109,7 @@ public final class MonitorData
         return result;
     }
 
-    public static final class Transcoder implements com.epickrram.freewheel.io.Transcoder<MonitorData>
+    public static final class Transcoder implements com.epickrram.freewheel.protocol.Transcoder<MonitorData>
     {
         @Override
         public void encode(final MonitorData encodable, final EncoderStream encoderStream) throws IOException

@@ -15,16 +15,12 @@ Copyright 2011 Mark Price
  */
 package com.epickrram.monitaur.agent;
 
-import com.epickrram.freewheel.io.ClassnameCodeBook;
-import com.epickrram.freewheel.messaging.MessagingService;
-import com.epickrram.freewheel.messaging.MessagingServiceImpl;
-import com.epickrram.freewheel.messaging.Receiver;
-import com.epickrram.freewheel.remoting.ClassNameTopicIdGenerator;
-import com.epickrram.freewheel.remoting.PublisherFactory;
-import com.epickrram.freewheel.remoting.SubscriberFactory;
+import com.epickrram.freewheel.protocol.ClassnameCodeBook;
 import com.epickrram.monitaur.agent.instrumentation.Transformer;
 import com.epickrram.monitaur.common.Agents;
 import com.epickrram.monitaur.common.AvailableAttributes;
+import com.epickrram.monitaur.common.FreewheelMessagingHelperFactory;
+import com.epickrram.monitaur.common.MessagingHelper;
 import com.epickrram.monitaur.common.Server;
 import com.epickrram.monitaur.common.domain.MonitorData;
 import com.epickrram.monitaur.common.instrumentation.TransferrableFinder;
@@ -58,20 +54,18 @@ public final class MonitoringAgent
                     codeBook.registerTranscoder(AvailableAttributes.class.getName(), new AvailableAttributes.Transcoder());
                     codeBook.registerTranscoder(AttributeDetails.class.getName(), new AttributeDetails.Transcoder());
 
-                    final MessagingService messagingService = new MessagingServiceImpl(InetAddress.getByName("239.0.0.1").getHostAddress(), 14001, codeBook);
-                    final ClassNameTopicIdGenerator topicIdGenerator = new ClassNameTopicIdGenerator();
-                    final Server server = new PublisherFactory(messagingService, topicIdGenerator, codeBook).createPublisher(Server.class);
+                    final MessagingHelper messagingHelper =
+                            new FreewheelMessagingHelperFactory(InetAddress.getByName("239.0.0.1"), 14001, codeBook).
+                                            createMessagingHelper();
+
+                    final Server server = messagingHelper.createPublisher(Server.class);
 
                     final JmxMonitoringAgent jmxMonitoringAgent = new JmxMonitoringAgent(server);
 
-                    final Receiver receiver = new SubscriberFactory().createReceiver(Agents.class, jmxMonitoringAgent);
-                    messagingService.registerReceiver(topicIdGenerator.getTopicId(Agents.class), receiver);
-
-                    messagingService.start();
+                    messagingHelper.registerSubscriber(Agents.class, jmxMonitoringAgent);
+                    messagingHelper.start();
 
                     jmxMonitoringAgent.start(Executors.newSingleThreadScheduledExecutor());
-//                    jmxMonitoringAgent.monitorNamedCompositeAttribute("HeapUsedBytes", ".*Memory$", "^HeapMemoryUsage$", "used");
-//                    jmxMonitoringAgent.monitorNamedCompositeAttribute("EdenUsedBytes", ".*PS Eden Space", "^Usage$", "used");
                 }
                 catch (Exception e)
                 {

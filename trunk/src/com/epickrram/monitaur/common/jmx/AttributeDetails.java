@@ -88,7 +88,7 @@ public final class AttributeDetails
         return result;
     }
 
-    public static final class Transcoder implements com.epickrram.freewheel.io.Transcoder<AttributeDetails>
+    public static final class Transcoder implements com.epickrram.freewheel.protocol.Transcoder<AttributeDetails>
     {
         @Override
         public void encode(final AttributeDetails encodable, final EncoderStream encoderStream) throws IOException
