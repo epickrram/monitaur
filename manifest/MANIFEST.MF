@@ -1,1 +1,2 @@
 Author: Mark Price
+Premain-Class: com.epickrram.monitaur.agent.MonitoringAgent
