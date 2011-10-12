@@ -16,6 +16,7 @@ Copyright 2011 Mark Price
 package com.epickrram.monitaur.agent;
 
 import com.epickrram.freewheel.protocol.ClassnameCodeBook;
+import com.epickrram.monitaur.agent.instrumentation.LatencyPublisher;
 import com.epickrram.monitaur.agent.instrumentation.Transformer;
 import com.epickrram.monitaur.common.Agents;
 import com.epickrram.monitaur.common.AvailableAttributes;
@@ -23,24 +24,55 @@ import com.epickrram.monitaur.common.FreewheelMessagingHelperFactory;
 import com.epickrram.monitaur.common.MessagingHelper;
 import com.epickrram.monitaur.common.Server;
 import com.epickrram.monitaur.common.domain.MonitorData;
-import com.epickrram.monitaur.common.instrumentation.TransferrableFinder;
 import com.epickrram.monitaur.common.jmx.AttributeDetails;
 
 import java.lang.instrument.Instrumentation;
 import java.net.InetAddress;
 import java.util.concurrent.Executors;
+import java.util.concurrent.locks.ReentrantLock;
 
 public final class MonitoringAgent 
 {
     public static void premain(final String agentArgs, final Instrumentation instrumentation)
     {
         final ClassnameCodeBook classnameCodeBook = new ClassnameCodeBook();
-        instrumentation.addTransformer(new TransferrableFinder(classnameCodeBook));
-        instrumentation.addTransformer(new Transformer());
-        startJmxMonitoring(classnameCodeBook);
+//        instrumentation.addTransformer(new TransferrableFinder(classnameCodeBook));
+        final ReentrantLock lock = new ReentrantLock();
+//        instrumentation.addTransformer(createLatencyMonitorClassTransformer(lock));
+        startJmxMonitoring(classnameCodeBook, lock);
     }
 
-    static void startJmxMonitoring(final ClassnameCodeBook codeBook)
+    private static Transformer createLatencyMonitorClassTransformer(final ReentrantLock lock)
+    {
+        final String latencyPublisherClass = System.getProperty("com.epickrram.monitaur.latency.LatencyPublisherClass");
+        if(latencyPublisherClass != null)
+        {
+            try
+            {
+                System.err.println("Creating LatencyPublisher of type: " + latencyPublisherClass);
+                final LatencyPublisher latencyPublisher = (LatencyPublisher)
+                        Class.forName(latencyPublisherClass).
+                                newInstance();
+
+                return new Transformer(latencyPublisher, lock);
+            }
+            catch (InstantiationException e)
+            {
+                throw new IllegalStateException("Cannot instantiate LatencyPublisher", e);
+            }
+            catch (IllegalAccessException e)
+            {
+                throw new IllegalStateException("Cannot instantiate LatencyPublisher", e);
+            }
+            catch (ClassNotFoundException e)
+            {
+                throw new IllegalStateException("Cannot instantiate LatencyPublisher", e);
+            }
+        }
+        return new Transformer(null, lock);
+    }
+
+    static void startJmxMonitoring(final ClassnameCodeBook codeBook, final ReentrantLock lock)
     {
         new Thread(new Runnable()
         {
@@ -58,14 +90,23 @@ public final class MonitoringAgent
                             new FreewheelMessagingHelperFactory(InetAddress.getByName("239.0.0.1"), 14001, codeBook).
                                             createMessagingHelper();
 
-                    final Server server = messagingHelper.createPublisher(Server.class);
+                    lock.lock();
+                    try
+                    {
+                        final Server server = messagingHelper.createPublisher(Server.class);
 
-                    final JmxMonitoringAgent jmxMonitoringAgent = new JmxMonitoringAgent(server);
+                        final JmxMonitoringAgent jmxMonitoringAgent = new JmxMonitoringAgent(server);
 
-                    messagingHelper.registerSubscriber(Agents.class, jmxMonitoringAgent);
-                    messagingHelper.start();
+                        messagingHelper.registerSubscriber(Agents.class, jmxMonitoringAgent);
+                        messagingHelper.start();
 
-                    jmxMonitoringAgent.start(Executors.newSingleThreadScheduledExecutor());
+                        jmxMonitoringAgent.start(Executors.newSingleThreadScheduledExecutor());
+                    }
+                    finally
+                    {
+                        lock.unlock();
+                    }
+
                 }
                 catch (Exception e)
                 {
