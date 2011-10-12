@@ -38,11 +38,11 @@ public final class MonitoringAgent
         final ClassnameCodeBook classnameCodeBook = new ClassnameCodeBook();
 //        instrumentation.addTransformer(new TransferrableFinder(classnameCodeBook));
         final ReentrantLock lock = new ReentrantLock();
-//        instrumentation.addTransformer(createLatencyMonitorClassTransformer(lock));
-        startJmxMonitoring(classnameCodeBook, lock);
+        instrumentation.addTransformer(createLatencyMonitorClassTransformer());
+        startJmxMonitoring(classnameCodeBook);
     }
 
-    private static Transformer createLatencyMonitorClassTransformer(final ReentrantLock lock)
+    private static Transformer createLatencyMonitorClassTransformer()
     {
         final String latencyPublisherClass = System.getProperty("com.epickrram.monitaur.latency.LatencyPublisherClass");
         if(latencyPublisherClass != null)
@@ -54,7 +54,7 @@ public final class MonitoringAgent
                         Class.forName(latencyPublisherClass).
                                 newInstance();
 
-                return new Transformer(latencyPublisher, lock);
+                return new Transformer(latencyPublisher);
             }
             catch (InstantiationException e)
             {
@@ -69,10 +69,10 @@ public final class MonitoringAgent
                 throw new IllegalStateException("Cannot instantiate LatencyPublisher", e);
             }
         }
-        return new Transformer(null, lock);
+        return new Transformer(null);
     }
 
-    static void startJmxMonitoring(final ClassnameCodeBook codeBook, final ReentrantLock lock)
+    static void startJmxMonitoring(final ClassnameCodeBook codeBook)
     {
         new Thread(new Runnable()
         {
@@ -90,22 +90,16 @@ public final class MonitoringAgent
                             new FreewheelMessagingHelperFactory(InetAddress.getByName("239.0.0.1"), 14001, codeBook).
                                             createMessagingHelper();
 
-                    lock.lock();
-                    try
-                    {
-                        final Server server = messagingHelper.createPublisher(Server.class);
 
-                        final JmxMonitoringAgent jmxMonitoringAgent = new JmxMonitoringAgent(server);
+                    final Server server = messagingHelper.createPublisher(Server.class);
 
-                        messagingHelper.registerSubscriber(Agents.class, jmxMonitoringAgent);
-                        messagingHelper.start();
+                    final JmxMonitoringAgent jmxMonitoringAgent = new JmxMonitoringAgent(server);
 
-                        jmxMonitoringAgent.start(Executors.newSingleThreadScheduledExecutor());
-                    }
-                    finally
-                    {
-                        lock.unlock();
-                    }
+                    messagingHelper.registerSubscriber(Agents.class, jmxMonitoringAgent);
+                    messagingHelper.start();
+
+                    jmxMonitoringAgent.start(Executors.newSingleThreadScheduledExecutor());
+                    
 
                 }
                 catch (Exception e)

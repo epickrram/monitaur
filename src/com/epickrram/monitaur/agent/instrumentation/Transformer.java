@@ -16,130 +16,119 @@ Copyright 2011 Mark Price
 package com.epickrram.monitaur.agent.instrumentation;
 
 import com.epickrram.monitaur.agent.latency.MonitorLatency;
-import javassist.ByteArrayClassPath;
-import javassist.CannotCompileException;
-import javassist.ClassPool;
-import javassist.CtClass;
-import javassist.CtMethod;
-import javassist.CtNewMethod;
-import javassist.NotFoundException;
+import javassist.*;
 
 import java.io.IOException;
 import java.lang.instrument.ClassFileTransformer;
 import java.lang.instrument.IllegalClassFormatException;
 import java.security.ProtectionDomain;
-import java.util.concurrent.locks.ReentrantLock;
 
 public final class Transformer implements ClassFileTransformer
 {
     private static LatencyPublisher latencyPublisherExposedForTesting;
-    private final ReentrantLock lock;
 
     private final LatencyPublisher latencyPublisher;
 
-    public Transformer(final LatencyPublisher latencyPublisher, final ReentrantLock lock)
+    public Transformer(final LatencyPublisher latencyPublisher)
     {
         this.latencyPublisher = latencyPublisher;
         latencyPublisherExposedForTesting = latencyPublisher;
-        this.lock = lock;
     }
 
-    public byte[] transform(final ClassLoader loader, final String className, final Class<?> classBeingRedefined,
-                            final ProtectionDomain protectionDomain, final byte[] classfileBuffer) throws IllegalClassFormatException
+    public synchronized byte[] transform(final ClassLoader loader, final String className, final Class<?> classBeingRedefined,
+                                         final ProtectionDomain protectionDomain, final byte[] classfileBuffer) throws IllegalClassFormatException
     {
-        lock.lock();
+        if(className.startsWith("java"))
+        {
+            return classfileBuffer;
+        }
+        final ClassPool classPool = new ClassPool(ClassPool.getDefault());
+        classPool.insertClassPath(new ByteArrayClassPath(className, classfileBuffer));
+        CtClass cc = null;
         try
         {
-            final ClassPool classPool = new ClassPool(ClassPool.getDefault());
-            classPool.insertClassPath(new ByteArrayClassPath(className, classfileBuffer));
-            CtClass cc = null;
-            try
+            cc = classPool.get(className.replace('/', '.'));
+        }
+        catch (NotFoundException nfe)
+        {
+            return classfileBuffer;
+        }
+        try
+        {
+            boolean classWasInstrumented = false;
+            CtMethod[] methods = cc.getDeclaredMethods();
+            for (CtMethod method : methods)
             {
-                cc = classPool.get(className.replace('/', '.'));
-            }
-            catch (NotFoundException nfe)
-            {
-                return classfileBuffer;
-            }
-            try
-            {
-                boolean classWasInstrumented = false;
-                CtMethod[] methods = cc.getDeclaredMethods();
-                for (CtMethod method : methods)
-                {
-                    try
-                    {
-                        final MonitorLatency annotation = (MonitorLatency) method.getAnnotation(MonitorLatency.class);
-                        if(annotation != null)
-                        {
-                            classWasInstrumented = true;
-
-                            System.err.println("Instrumenting method " + className + "." + method.getName());
-                            addTiming(cc, className.replace('/', '.'), method.getName(), method.getParameterTypes(), annotation.durationThresholdMillis());
-    //                        System.err.println("About to add field..");
-    ////                        cc.addField(CtField.make("private static final ThreadLocal METHOD_DURATION = new ThreadLocal();", cc));
-    //                        System.err.println("Added field");
-    ////                        final String before = "{METHOD_DURATION.set(Long.valueOf(System.nanoTime()));}";
-    //                        final String before = "{System.err.println(\"foo\");}";
-    //                        method.insertBefore(before);
-    //                        final String after = "{final long durationNanos = System.nanoTime() - ((Long) METHOD_DURATION.get()).longValue();\n" +
-    //                                "com.epickrram.monitaur.agent.instrumentation.Transformer.reportMethodDuration(\"" + className.replace('/', '.') + "\", \"" + method.getName() + "\", durationNanos, " + annotation.durationThresholdMillis() + "L);}";
-    ////                        method.insertAfter(after, true);
-    //                        System.err.println("Before:\n" + before);
-    //                        System.err.println("After:\n" + after);
-                            System.err.println("Wrapped call");
-                        }
-                    }
-                    catch (CannotCompileException cce)
-                    {
-                        System.err.println("CannotCompileException: " + cce.getMessage() + "; instrumenting method " + method.getLongName() + "; method will not be instrumented");
-                        cce.printStackTrace();
-                    }
-                    catch(Throwable t)
-                    {
-                        t.printStackTrace();
-                    }
-                }
-                // return the new bytecode array:
-                byte[] newClassfileBuffer = null;
-                if(classWasInstrumented)
-                {
-                    System.err.println("Attempting compile of instrumented code");
-                }
                 try
                 {
-                    newClassfileBuffer = cc.toBytecode();
-                    if(classWasInstrumented)
+                    final MonitorLatency annotation = (MonitorLatency) method.getAnnotation(MonitorLatency.class);
+                    if (annotation != null)
                     {
-                        System.err.println("Returned instrumented class");
+                        classWasInstrumented = true;
+
+                        System.err.println("Instrumenting method " + className + "." + method.getName());
+                        addTiming(cc, className.replace('/', '.'), method.getName(), method.getParameterTypes(), annotation.durationThresholdMillis());
+                        //                        System.err.println("About to add field..");
+                        ////                        cc.addField(CtField.make("private static final ThreadLocal METHOD_DURATION = new ThreadLocal();", cc));
+                        //                        System.err.println("Added field");
+                        ////                        final String before = "{METHOD_DURATION.set(Long.valueOf(System.nanoTime()));}";
+                        //                        final String before = "{System.err.println(\"foo\");}";
+                        //                        method.insertBefore(before);
+                        //                        final String after = "{final long durationNanos = System.nanoTime() - ((Long) METHOD_DURATION.get()).longValue();\n" +
+                        //                                "com.epickrram.monitaur.agent.instrumentation.Transformer.reportMethodDuration(\"" + className.replace('/', '.') + "\", \"" + method.getName() + "\", durationNanos, " + annotation.durationThresholdMillis() + "L);}";
+                        ////                        method.insertAfter(after, true);
+                        //                        System.err.println("Before:\n" + before);
+                        //                        System.err.println("After:\n" + after);
+                        System.err.println("Wrapped call");
                     }
-                }
-                catch (IOException ioe)
-                {
-                    ioe.printStackTrace();
-                    return null;
                 }
                 catch (CannotCompileException cce)
                 {
+                    System.err.println("CannotCompileException: " + cce.getMessage() + "; instrumenting method " + method.getLongName() + "; method will not be instrumented");
                     cce.printStackTrace();
-                    return null;
                 }
-                return newClassfileBuffer;
+                catch (Throwable t)
+                {
+                    t.printStackTrace();
+                }
             }
-            catch (Throwable e)
+            // return the new bytecode array:
+            byte[] newClassfileBuffer = null;
+            if (classWasInstrumented)
             {
-                e.printStackTrace();
+                System.err.println("Attempting compile of instrumented code");
             }
+            try
+            {
+                newClassfileBuffer = cc.toBytecode();
+                if (classWasInstrumented)
+                {
+                    System.err.println("Returned instrumented class");
+                }
+            }
+            catch (IOException ioe)
+            {
+                ioe.printStackTrace();
+                return null;
+            }
+            catch (CannotCompileException cce)
+            {
+                cce.printStackTrace();
+                return null;
+            }
+            return newClassfileBuffer;
         }
-        finally
+        catch (Throwable e)
         {
-            lock.unlock();
+            e.printStackTrace();
         }
+
         return classfileBuffer;
     }
 
     private static void addTiming(final CtClass ctClass, final String className, final String methodName,
-                                  final CtClass[] parameterTypes, final long latencyThresholdMillis) throws NotFoundException, CannotCompileException {
+                                  final CtClass[] parameterTypes, final long latencyThresholdMillis) throws NotFoundException, CannotCompileException
+    {
 
         //  get the method information (throws exception if method with
         //  given name is not declared directly by this class, returns
@@ -148,7 +137,7 @@ public final class Transformer implements ClassFileTransformer
 
         //  rename old method to synthetic name, then duplicate the
         //  method with original name for use as interceptor
-        String nname = methodName+"$impl";
+        String nname = methodName + "$impl";
         mold.setName(nname);
         System.err.println("Copying method");
         CtMethod mnew = CtNewMethod.copy(mold, methodName, ctClass, null);
@@ -160,7 +149,8 @@ public final class Transformer implements ClassFileTransformer
         String type = mold.getReturnType().getName();
         StringBuffer body = new StringBuffer();
         body.append("{\nfinal long start = System.currentTimeMillis();\n");
-        if (!"void".equals(type)) {
+        if (!"void".equals(type))
+        {
             body.append(type + " result = ");
         }
         body.append(nname + "($$);\n");
@@ -170,7 +160,8 @@ public final class Transformer implements ClassFileTransformer
         body.append(Transformer.class.getName()).append(".reportMethodDuration(\"").append(className).
                 append("\", \"").append(methodName).append("\", System.currentTimeMillis() - start, ").
                 append(latencyThresholdMillis).append("L);");
-        if (!"void".equals(type)) {
+        if (!"void".equals(type))
+        {
             body.append("return result;\n");
         }
         body.append("}");
@@ -182,7 +173,7 @@ public final class Transformer implements ClassFileTransformer
         {
             mnew.setBody(body.toString());
         }
-        catch(Throwable t)
+        catch (Throwable t)
         {
             System.err.println("Caught exception");
             t.printStackTrace(System.err);
@@ -197,7 +188,7 @@ public final class Transformer implements ClassFileTransformer
 
     public static void reportMethodDuration(final String className, final String methodId, final long durationMillis, final long thresholdMillis)
     {
-        if(durationMillis > thresholdMillis)
+        if (durationMillis > thresholdMillis)
         {
             latencyPublisherExposedForTesting.onCapturedLatency(className, methodId, durationMillis);
         }
