@@ -15,7 +15,7 @@ Copyright 2011 Mark Price
  */
 package com.epickrram.monitaur.agent;
 
-import com.epickrram.freewheel.protocol.ClassnameCodeBook;
+import com.epickrram.freewheel.protocol.CodeBookImpl;
 import com.epickrram.monitaur.agent.instrumentation.LatencyPublisher;
 import com.epickrram.monitaur.agent.instrumentation.Transformer;
 import com.epickrram.monitaur.common.Agents;
@@ -35,11 +35,11 @@ public final class MonitoringAgent
 {
     public static void premain(final String agentArgs, final Instrumentation instrumentation)
     {
-        final ClassnameCodeBook classnameCodeBook = new ClassnameCodeBook();
-//        instrumentation.addTransformer(new TransferrableFinder(classnameCodeBook));
+        final CodeBookImpl codeBook = new CodeBookImpl();
+//        instrumentation.addTransformer(new TransferrableFinder(codeBook));
         final ReentrantLock lock = new ReentrantLock();
-        instrumentation.addTransformer(createLatencyMonitorClassTransformer());
-        startJmxMonitoring(classnameCodeBook);
+//        instrumentation.addTransformer(createLatencyMonitorClassTransformer(lock));
+        startJmxMonitoring(codeBook, lock);
     }
 
     private static Transformer createLatencyMonitorClassTransformer()
@@ -72,7 +72,7 @@ public final class MonitoringAgent
         return new Transformer(null);
     }
 
-    static void startJmxMonitoring(final ClassnameCodeBook codeBook)
+    static void startJmxMonitoring(final CodeBookImpl codeBook, final ReentrantLock lock)
     {
         new Thread(new Runnable()
         {
@@ -82,9 +82,10 @@ public final class MonitoringAgent
                 try
                 {
                     // TODO this should be done by agent code
-                    codeBook.registerTranscoder(MonitorData.class.getName(), new MonitorData.Transcoder());
-                    codeBook.registerTranscoder(AvailableAttributes.class.getName(), new AvailableAttributes.Transcoder());
-                    codeBook.registerTranscoder(AttributeDetails.class.getName(), new AttributeDetails.Transcoder());
+                    final CodeBookImpl.CodeBookRegistryImpl codeBookRegistry = new CodeBookImpl.CodeBookRegistryImpl(codeBook);
+                    codeBookRegistry.registerTranslatable(MonitorData.class);
+                    codeBookRegistry.registerTranslatable(AvailableAttributes.class);
+                    codeBookRegistry.registerTranslatable(AttributeDetails.class);
 
                     final MessagingHelper messagingHelper =
                             new FreewheelMessagingHelperFactory(InetAddress.getByName("239.0.0.1"), 14001, codeBook).

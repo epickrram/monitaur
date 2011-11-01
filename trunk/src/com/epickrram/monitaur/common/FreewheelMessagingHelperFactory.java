@@ -9,9 +9,9 @@ public final class FreewheelMessagingHelperFactory implements MessagingHelperFac
 {
     private final InetAddress multicastAddress;
     private final int port;
-    private final CodeBook<String> codeBook;
+    private final CodeBook codeBook;
 
-    public FreewheelMessagingHelperFactory(final InetAddress multicastAddress, final int port, final CodeBook<String> codeBook)
+    public FreewheelMessagingHelperFactory(final InetAddress multicastAddress, final int port, final CodeBook codeBook)
     {
         this.multicastAddress = multicastAddress;
         this.port = port;
