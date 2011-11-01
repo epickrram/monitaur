@@ -2,11 +2,13 @@ package com.epickrram.monitaur.common.jmx;
 
 import com.epickrram.freewheel.io.DecoderStream;
 import com.epickrram.freewheel.io.EncoderStream;
-import com.epickrram.monitaur.common.io.Transferrable;
+import com.epickrram.freewheel.protocol.AbstractTranslator;
+import com.epickrram.freewheel.protocol.Translatable;
+import com.epickrram.monitaur.common.domain.TranslatorCodes;
 
 import java.io.IOException;
 
-@Transferrable
+@Translatable(codeBookId = TranslatorCodes.ATTRIBUTE_DETAILS)
 public final class AttributeDetails
 {
     private final String objectName;
@@ -88,10 +90,10 @@ public final class AttributeDetails
         return result;
     }
 
-    public static final class Transcoder implements com.epickrram.freewheel.protocol.Transcoder<AttributeDetails>
+    public static final class Translator extends AbstractTranslator<AttributeDetails>
     {
         @Override
-        public void encode(final AttributeDetails encodable, final EncoderStream encoderStream) throws IOException
+        protected void doEncode(final AttributeDetails encodable, final EncoderStream encoderStream) throws IOException
         {
             encoderStream.writeString(encodable.objectName);
             encoderStream.writeString(encodable.attributeName);
@@ -99,7 +101,7 @@ public final class AttributeDetails
         }
 
         @Override
-        public AttributeDetails decode(final DecoderStream decoderStream) throws IOException
+        protected AttributeDetails doDecode(final DecoderStream decoderStream) throws IOException
         {
             final String objectName = decoderStream.readString();
             final String attributeName = decoderStream.readString();
@@ -108,5 +110,4 @@ public final class AttributeDetails
             return new AttributeDetails(objectName, attributeName, compositeKeyName);
         }
     }
-
 }

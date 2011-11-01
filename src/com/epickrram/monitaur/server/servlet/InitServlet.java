@@ -15,7 +15,7 @@ Copyright 2011 Mark Price
  */
 package com.epickrram.monitaur.server.servlet;
 
-import com.epickrram.freewheel.protocol.ClassnameCodeBook;
+import com.epickrram.freewheel.protocol.CodeBookImpl;
 import com.epickrram.monitaur.common.Agents;
 import com.epickrram.monitaur.common.AvailableAttributes;
 import com.epickrram.monitaur.common.FreewheelMessagingHelperFactory;
@@ -50,11 +50,13 @@ public final class InitServlet extends GenericServlet
 
         try
         {
-            // TODO use agent to auto-register @Transferrable classes
-            final ClassnameCodeBook codeBook = new ClassnameCodeBook();
-            codeBook.registerTranscoder(MonitorData.class.getName(), new MonitorData.Transcoder());
-            codeBook.registerTranscoder(AvailableAttributes.class.getName(), new AvailableAttributes.Transcoder());
-            codeBook.registerTranscoder(AttributeDetails.class.getName(), new AttributeDetails.Transcoder());
+            // TODO Freewheel should provide a CodeBook context to return a CodeBook and a CodeBookRegistry
+
+            final CodeBookImpl codeBook = new CodeBookImpl();
+            final CodeBookImpl.CodeBookRegistryImpl codeBookRegistry = new CodeBookImpl.CodeBookRegistryImpl(codeBook);
+            codeBookRegistry.registerTranslatable(MonitorData.class);
+            codeBookRegistry.registerTranslatable(AvailableAttributes.class);
+            codeBookRegistry.registerTranslatable(AttributeDetails.class);
 
             final MessagingHelper messagingHelper = new FreewheelMessagingHelperFactory(InetAddress.getByName("239.0.0.1"),
                     14001, codeBook).createMessagingHelper();

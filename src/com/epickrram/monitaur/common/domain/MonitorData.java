@@ -17,11 +17,12 @@ package com.epickrram.monitaur.common.domain;
 
 import com.epickrram.freewheel.io.DecoderStream;
 import com.epickrram.freewheel.io.EncoderStream;
-import com.epickrram.monitaur.common.io.Transferrable;
+import com.epickrram.freewheel.protocol.AbstractTranslator;
+import com.epickrram.freewheel.protocol.Translatable;
 
 import java.io.IOException;
 
-@Transferrable
+@Translatable(codeBookId = TranslatorCodes.MONITOR_DATA)
 public final class MonitorData
 {
     private final MonitorType monitorType;
@@ -109,10 +110,10 @@ public final class MonitorData
         return result;
     }
 
-    public static final class Transcoder implements com.epickrram.freewheel.protocol.Transcoder<MonitorData>
+    public static final class Translator extends AbstractTranslator<MonitorData>
     {
         @Override
-        public void encode(final MonitorData encodable, final EncoderStream encoderStream) throws IOException
+        protected void doEncode(final MonitorData encodable, final EncoderStream encoderStream) throws IOException
         {
             encoderStream.writeInt(encodable.monitorType.ordinal());
             encoderStream.writeString(encodable.logicalName);
@@ -122,7 +123,7 @@ public final class MonitorData
         }
 
         @Override
-        public MonitorData decode(final DecoderStream decoderStream) throws IOException
+        protected MonitorData doDecode(final DecoderStream decoderStream) throws IOException
         {
             final MonitorType monitorType = MonitorType.values()[decoderStream.readInt()];
             final String logicalName = decoderStream.readString();

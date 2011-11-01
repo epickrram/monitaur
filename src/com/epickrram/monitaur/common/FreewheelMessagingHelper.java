@@ -14,7 +14,7 @@ public final class FreewheelMessagingHelper implements MessagingHelper
     private final SubscriberFactory subscriberFactory;
     private final ClassNameTopicIdGenerator topicIdGenerator;
 
-    public FreewheelMessagingHelper(final MessagingService messagingService, final CodeBook<String> codeBook)
+    public FreewheelMessagingHelper(final MessagingService messagingService, final CodeBook codeBook)
     {
         this.messagingService = messagingService;
         topicIdGenerator = new ClassNameTopicIdGenerator();

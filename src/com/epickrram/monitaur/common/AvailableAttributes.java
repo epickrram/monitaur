@@ -2,14 +2,16 @@ package com.epickrram.monitaur.common;
 
 import com.epickrram.freewheel.io.DecoderStream;
 import com.epickrram.freewheel.io.EncoderStream;
-import com.epickrram.monitaur.common.io.Transferrable;
+import com.epickrram.freewheel.protocol.AbstractTranslator;
+import com.epickrram.freewheel.protocol.Translatable;
+import com.epickrram.monitaur.common.domain.TranslatorCodes;
 import com.epickrram.monitaur.common.jmx.AttributeDetails;
 
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
-@Transferrable
+@Translatable(codeBookId = TranslatorCodes.AVAILABLE_ATTRIBUTES)
 public final class AvailableAttributes
 {
     private final String agentId;
@@ -31,29 +33,21 @@ public final class AvailableAttributes
         return attributeDetails;
     }
 
-    public static final class Transcoder implements com.epickrram.freewheel.protocol.Transcoder<AvailableAttributes>
+    public static final class Translator extends AbstractTranslator<AvailableAttributes>
     {
         @Override
-        public void encode(final AvailableAttributes encodable, final EncoderStream encoderStream) throws IOException
+        protected void doEncode(final AvailableAttributes encodable, final EncoderStream encoderStream) throws IOException
         {
             encoderStream.writeString(encodable.agentId);
-            encoderStream.writeInt(encodable.attributeDetails.size());
-            for (AttributeDetails attributeDetail : encodable.attributeDetails)
-            {
-                encoderStream.writeObject(attributeDetail);
-            }
+            encoderStream.writeCollection(encodable.attributeDetails);
         }
 
         @Override
-        public AvailableAttributes decode(final DecoderStream decoderStream) throws IOException
+        protected AvailableAttributes doDecode(final DecoderStream decoderStream) throws IOException
         {
             final String agentId = decoderStream.readString();
-            final int collectionSize = decoderStream.readInt();
-            final List<AttributeDetails> attributeList = new ArrayList<AttributeDetails>(collectionSize);
-            for(int i = 0; i < collectionSize; i++)
-            {
-                attributeList.add(decoderStream.<AttributeDetails>readObject());
-            }
+            final List<AttributeDetails> attributeList = new ArrayList<AttributeDetails>();
+            decoderStream.readCollection(attributeList);
 
             return new AvailableAttributes(agentId, attributeList);
         }
